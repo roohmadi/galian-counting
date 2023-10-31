@@ -71,13 +71,28 @@ import warnings
 warnings.filterwarnings("ignore")
 running = False
 
+
+
 global skip_double,sabes_count, batu_count, cntFileSaveSabes, cntFileSaveBatu, PINTU
 skip_double = 0
 sabes_count =  0
 batu_count = 0
 cntFileSaveSabes = 0
 cntFileSaveBatu = 0
-PINTU = 3
+
+from configparser import ConfigParser
+config = ConfigParser()
+
+print('--------=---------')
+isExistINI = os.path.exists('galianset.ini')
+print(isExistINI)
+if isExistINI:
+    config.read('galianset.ini')
+    val_rtsp = config.get('galian', 'rtspset')
+    PINTU = config.get('pintu', 'pintuset')
+else:
+    val_rtsp =  ''
+#PINTU = 3
 
 # Load YOLOv5 model
 #model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
@@ -739,9 +754,14 @@ lbl_cy = Label(fr_button, text=": 0", font=('Times 14'))
 lbl_cy.grid(row=18, column=1, padx=5, pady=5, sticky="w")
 
 lbl_phase_max = Label(fr_button, text="val", font=('Times 14'))
-lbl_phase_max.grid(row=19, column=0, padx=10, pady=5, sticky="w")
+#lbl_phase_max.grid(row=19, column=0, padx=10, pady=5, sticky="w")
 lbl_val = Label(fr_button, text=": 0", font=('Times 14'))
-lbl_val.grid(row=19, column=1, padx=5, pady=5, sticky="w")
+#lbl_val.grid(row=19, column=1, padx=5, pady=5, sticky="w")
+
+lbl_rtsp1 = Label(fr_button, text="RTSP", font=('Times 14'))
+#lbl_rtsp1.grid(row=20, column=0, padx=10, pady=5, sticky="w")
+lbl_rtsp1val = Label(fr_button, text=": 0", font=('Times 14'))
+#lbl_rtsp1val.grid(row=20, column=1, padx=5, pady=5, sticky="w")
 
 # textbox
 lbl_rtsp = Label(fr_button, text="RTSP: ", font=('Times 14'))
@@ -759,20 +779,11 @@ fr_button.grid(row=0, column=0, sticky="ns")
 fr_graph.grid(row=0, column=1, sticky="nsew")
 fr_result.grid(row=0, column=2, sticky="nsew")
 
-from configparser import ConfigParser
-config = ConfigParser()
 
-print('--------=---------')
-isExistINI = os.path.exists('galianset.ini')
-print(isExistINI)
-if isExistINI:
-    config.read('galianset.ini')
-    val_rtsp = config.get('galian', 'rtspset')
-else:
-    val_rtsp =  ''
 
 entry1.insert(0, val_rtsp)
 lbl_cy['text']= ": " + str(PINTU)
+lbl_rtsp1val['text']= ": " + val_rtsp
 #get_location()
 
 root.mainloop()
