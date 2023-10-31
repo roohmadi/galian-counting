@@ -1,6 +1,6 @@
 <div align="center">
 
-# Vehicle Counting using Yolov5 and Deep Sort
+# Galian Counting using Yolov5 and Deep Sort
 
 </div>
 
@@ -21,12 +21,12 @@
 
 ## Pre-requisites : 
 
-1) Clone the Repository [vehicle-counting-yolov5](https://github.com/mahimairaja/vehicle-counting-yolov5)
+1) Clone the Repository [galian-counting-yolov5](https://github.com/roohmadi/galian-counting.git)
 
 ```bash
-git clone https://github.com/mahimairaja/vehicle-counting-yolov5.git
+git clone https://github.com/roohmadi/galian-counting.git
 
-cd vehicle-counting-yolov5
+cd galian-counting-yolov5
 ```
 
 2) Clone the legacy Yolo-v5 Repository
@@ -51,15 +51,15 @@ After completing the above steps your directory should look like somewhat as of 
    - deep_sort
    - yolov5
    - input.mp4
-   - yolov5s.pt
-   - tracker.py
+   - galian_200epch_1k2.pt
+   - galian_web.py
    - requirements.txt
 
 ## Run the algorithm 
 
 ``` bash
-python tracker.py 
+python galian_web.py 
 # This will download model weight - yolov5s.pt to base folder on first execution.
 ```
 
-#### Feel free to [conect with me](https://www.linkedin.com/in/mahimairaja/)...
+#### Feel free to [conect with me](https://www.linkedin.com/in//)...
