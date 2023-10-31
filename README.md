@@ -50,7 +50,6 @@ After completing the above steps your directory should look like somewhat as of 
 - `vehicle-counting-yolov5`
    - deep_sort
    - yolov5
-   - input.mp4
    - galian_200epch_1k2.pt
    - galian_web.py
    - requirements.txt
