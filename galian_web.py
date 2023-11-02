@@ -97,7 +97,7 @@ else:
 # Load YOLOv5 model
 #model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 #print(model)
-model = torch.hub.load('ultralytics/yolov5', 'custom', 'galian_200epch_1k2.pt')
+model = torch.hub.load('ultralytics/yolov5', 'custom', 'galian_200epch_1k5.pt')
 
 root = Tk()
 #root = Toplevel()
@@ -294,7 +294,8 @@ def cctv_func1():
     print(x.text)
 
 def cctv_func():
-    cap = cv2.VideoCapture('C:\\Users\\roohm\\vehicle-counting-yolov5\\data\\video\\sabesdouble.mp4')
+    #cap = cv2.VideoCapture('C:\\Users\\roohm\\vehicle-counting-yolov5\\data\\video\\sabesdouble.mp4')
+    cap = cv2.VideoCapture(val_rtsp)
 
     display_frame2 = tk.Frame(root)
     display_frame2.place(relx=0.5, rely=0.3, width = 800, height = 900, anchor=tk.CENTER)
@@ -661,7 +662,7 @@ def upload_vid_func():
                                     skip_double = 0
 
                     #frame3 = cv2.flip(frame, 1)
-                    frame3 = current_frame_small
+                    frame3 = frame#current_frame_small
                     cv2image2 = cv2.cvtColor(frame3, cv2.COLOR_BGR2RGBA)
                     img2 = Image.fromarray(cv2image2)
 
