@@ -45,6 +45,7 @@ from os.path import exists
 import math
 import time
 import datetime
+import urllib.request
 
 from tkinter import filedialog as fd
 
@@ -129,6 +130,13 @@ fr_result = Frame(root)
 #================== begin GUI ========
 
 fig = Figure(figsize = (6, 5), dpi = 100)
+
+def connect(host='http://google.com'):
+    try:
+        urllib.request.urlopen(host) #Python 3.x
+        return True
+    except:
+        return False
 
 def web_cam_func():
     width, height = 400, 400
@@ -232,66 +240,6 @@ def cctv_func123():
     test_res = requests.post(url_img, files =  files)
     print(test_res)
 
-def cctv_func11():
-    get_location()
-
-def cctv_func0():
-    global sabes_count
-    sabes_count += 1
-    # using now() to get current time
-    current_time = datetime.datetime.now()
-    tgl = str(current_time.year) + "-" + str(current_time.month) + "-" + str(current_time.day)
-    jam = str(current_time.hour) + ":" + str(current_time.minute) + ":" + str(current_time.second)
-    print(tgl)
-    print(jam)
- 
-    url = 'https://produk-inovatif.com/latihan/galian/galian.php?ins=2'
-    #data = { 'tgl': '2023-10-26', 'jam': '21:31:00', 'muatan': '1', 'pintu': '4', 'filename': 'test.jpg', 'source': 'upload'}
-    data = { 'tgl': tgl, 'jam': jam, 'muatan': '1', 'pintu': '4', 'filename': 'test.jpg', 'source': 'upload'}
-
-    head = {'Content-Type' : 'application/x-www-form-urlencoded'}
-    x = requests.post(url, data=data, headers=head)
-
-
-    print(x.text)
-    url = 'https://produk-inovatif.com/latihan/galian/galian.php?pintu=2'
-    #data = {  'sabes': '2', 'batubelah': '0', 'pintu': '2'}
-    data = {  'sabes': '2', 'batubelah': '0', 'pintu': '2'}
-
-    head = {'Content-Type' : 'application/x-www-form-urlencoded'}
-    x = requests.post(url, data=data, headers=head)
-
-    print(x.text)
-
-def cctv_func3():
-    global sabes_count
-    sabes_count += 1
-    url = 'https://produk-inovatif.com/latihan/galian/galian.php?ins=2'
-    data = { 'tgl': '2023-10-26', 'jam': '21:31:00', 'muatan': '1', 'pintu': '4', 'filename': 'test.jpg', 'source': 'upload'}
-
-    head = {'Content-Type' : 'application/x-www-form-urlencoded'}
-    x = requests.post(url, data=data, headers=head)
-
-
-    print(x.text)
-
-    url = 'https://produk-inovatif.com/latihan/galian/galian.php?pintu=2'
-    data = {  'sabes': '2', 'batubelah': '0', 'pintu': '2'}
-
-    head = {'Content-Type' : 'application/x-www-form-urlencoded'}
-    x = requests.post(url, data=data, headers=head)
-
-    print(x.text)
-
-def cctv_func1():
-    global sabes_count
-    sabes_count += 1
-    url = 'https://produk-inovatif.com/latihan/galian/galian.php?pintu=2'
-    data = {  'sabes': '3', 'batubelah': '3', 'pintu': '2'}
-
-    head = {'Content-Type' : 'application/x-www-form-urlencoded'}
-    x = requests.post(url, data=data, headers=head)
-    print(x.text)
 
 def cctv_func():
     #cap = cv2.VideoCapture('C:\\Users\\roohm\\vehicle-counting-yolov5\\data\\video\\sabesdouble.mp4')
@@ -356,39 +304,40 @@ def cctv_func():
                                     current_frame_small)
                         cv2.imwrite(filename, img_resize)
 
-                        url = 'https://produk-inovatif.com/latihan/galian/galian.php?ins=2'
-                        # data = { 'tgl': '2023-10-26', 'jam': '21:31:00', 'muatan': '1', 'pintu': '4', 'filename': 'test.jpg', 'source': 'upload'}
-                        data = {'tgl': tgl, 'jam': jam, 'muatan': '0', 'pintu': str(
-                            PINTU), 'filename': filename, 'source': 'live'}
+                        if connect():
+                            url = 'https://produk-inovatif.com/latihan/galian/galian.php?ins=2'
+                            # data = { 'tgl': '2023-10-26', 'jam': '21:31:00', 'muatan': '1', 'pintu': '4', 'filename': 'test.jpg', 'source': 'upload'}
+                            data = {'tgl': tgl, 'jam': jam, 'muatan': '0', 'pintu': str(
+                                PINTU), 'filename': filename, 'source': 'live'}
 
-                        head = {
-                            'Content-Type': 'application/x-www-form-urlencoded'}
-                        x = requests.post(
-                            url, data=data, headers=head)
+                            head = {
+                                'Content-Type': 'application/x-www-form-urlencoded'}
+                            x = requests.post(
+                                url, data=data, headers=head)
 
-                        print(x.text)
+                            print(x.text)
 
-                        # ----- update data di tbtempdata
-                        url = 'https://produk-inovatif.com/latihan/galian/galian.php?muatan=2'
-                        # data = {  'sabes': '2', 'batubelah': '0', 'pintu': '2'}
-                        data = {'tgl': tgl, 'jam': jam,
-                                'muatan': '0', 'pintu': str(PINTU)}
+                            # ----- update data di tbtempdata
+                            url = 'https://produk-inovatif.com/latihan/galian/galian.php?muatan=2'
+                            # data = {  'sabes': '2', 'batubelah': '0', 'pintu': '2'}
+                            data = {'tgl': tgl, 'jam': jam,
+                                    'muatan': '0', 'pintu': str(PINTU)}
 
-                        head = {
-                            'Content-Type': 'application/x-www-form-urlencoded'}
-                        x = requests.post(
-                            url, data=data, headers=head)
+                            head = {
+                                'Content-Type': 'application/x-www-form-urlencoded'}
+                            x = requests.post(
+                                url, data=data, headers=head)
 
-                        print(x.text)
+                            print(x.text)
 
-                        dfile = open(filename, "rb").read()
+                            dfile = open(filename, "rb").read()
 
-                        url_img = 'https://produk-inovatif.com/latihan/galian/img_py.php'
-                        files = {
-                            'file': (filename, dfile, 'image/jpg', {'Expires': '0'})}
-                        test_res = requests.post(
-                            url_img, files=files)
-                        print(test_res)
+                            url_img = 'https://produk-inovatif.com/latihan/galian/img_py.php'
+                            files = {
+                                'file': (filename, dfile, 'image/jpg', {'Expires': '0'})}
+                            test_res = requests.post(
+                                url_img, files=files)
+                            print(test_res)
                     if (cy > 250) and (int(cls) == 2) and (skip_double == 0):
                         skip_double = 1
                         batu_count += 1
@@ -413,87 +362,44 @@ def cctv_func():
                                     current_frame_small)
                         cv2.imwrite(filename, img_resize)
 
-                        # ----- simpan data di tbLog
-                        url = 'https://produk-inovatif.com/latihan/galian/galian.php?ins=2'
-                        # data = { 'tgl': '2023-10-26', 'jam': '21:31:00', 'muatan': '1', 'pintu': '4', 'filename': 'test.jpg', 'source': 'upload'}
-                        data = {'tgl': tgl, 'jam': jam, 'muatan': '1', 'pintu': str(
-                            PINTU), 'filename': filename, 'source': 'live'}
+                        if connect():
+                            # ----- simpan data di tbLog
+                            url = 'https://produk-inovatif.com/latihan/galian/galian.php?ins=2'
+                            # data = { 'tgl': '2023-10-26', 'jam': '21:31:00', 'muatan': '1', 'pintu': '4', 'filename': 'test.jpg', 'source': 'upload'}
+                            data = {'tgl': tgl, 'jam': jam, 'muatan': '1', 'pintu': str(
+                                PINTU), 'filename': filename, 'source': 'live'}
 
-                        head = {
-                            'Content-Type': 'application/x-www-form-urlencoded'}
-                        x = requests.post(
-                            url, data=data, headers=head)
+                            head = {
+                                'Content-Type': 'application/x-www-form-urlencoded'}
+                            x = requests.post(
+                                url, data=data, headers=head)
 
-                        print(x.text)
+                            print(x.text)
 
-                        # ----- update data di tbtempdata
-                        url = 'https://produk-inovatif.com/latihan/galian/galian.php?muatan=2'
-                        # data = {  'sabes': '2', 'batubelah': '0', 'pintu': '2'}
-                        data = {'tgl': tgl, 'jam': jam,
-                                'muatan': '1', 'pintu': str(PINTU)}
+                            # ----- update data di tbtempdata
+                            url = 'https://produk-inovatif.com/latihan/galian/galian.php?muatan=2'
+                            # data = {  'sabes': '2', 'batubelah': '0', 'pintu': '2'}
+                            data = {'tgl': tgl, 'jam': jam,
+                                    'muatan': '1', 'pintu': str(PINTU)}
 
-                        head = {
-                            'Content-Type': 'application/x-www-form-urlencoded'}
-                        x = requests.post(
-                            url, data=data, headers=head)
+                            head = {
+                                'Content-Type': 'application/x-www-form-urlencoded'}
+                            x = requests.post(
+                                url, data=data, headers=head)
 
-                        print(x.text)
+                            print(x.text)
 
-                        # ------ upload file gambar dan simpan diserver
-                        dfile = open(filename, "rb").read()
+                            # ------ upload file gambar dan simpan diserver
+                            dfile = open(filename, "rb").read()
 
-                        url_img = 'https://produk-inovatif.com/latihan/galian/img_py.php'
-                        files = {
-                            'file': (filename, dfile, 'image/jpg', {'Expires': '0'})}
-                        test_res = requests.post(
-                            url_img, files=files)
-                        print(test_res)
+                            url_img = 'https://produk-inovatif.com/latihan/galian/img_py.php'
+                            files = {
+                                'file': (filename, dfile, 'image/jpg', {'Expires': '0'})}
+                            test_res = requests.post(
+                                url_img, files=files)
+                            print(test_res)
                     if (cy <= 200) and ((int(cls) == 1) or (int(cls) == 2)):
                         skip_double = 0
-            #frame3 = cv2.flip(current_frame_small, 1)
-            frame3 = current_frame_small
-            cv2image2 = cv2.cvtColor(frame3, cv2.COLOR_BGR2RGBA)
-            img2 = Image.fromarray(cv2image2)
-
-            imgtk2 = ImageTk.PhotoImage(image=img2)
-
-            lmain1.imgtk = imgtk2
-            lmain1.configure(image=imgtk2)
-            
-            lmain1.after(10, show_frame)
-        
-    show_frame()
-
-def cctv_func_dumm():
-    #width, height = 1000, 1000
-    #cap = cv2.VideoCapture(0)
-    #cap = cv2.VideoCapture('rtsp://admin:admin82@192.168.1.3:554/unicast/c1/s0/live')
-    cap = cv2.VideoCapture(val_rtsp)
-
-    #cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-    #cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-
-
-    display_frame2 = tk.Frame(root)
-    display_frame2.place(relx=0.5, rely=0.3, width = 800, height = 900, anchor=tk.CENTER)
-
-
-    lmain1 = tk.Label(display_frame2)
-    lmain1.place(x = 0, y = 0, width=800, height=900)
-
-    def show_frame():
-            _, frame = cap.read()
-            current_frame_small = cv2.resize(frame,(0,0),fx=0.35,fy=0.35)
-            # Perform inference
-            results = model(current_frame_small)
-
-             # Parse results and draw bounding boxes
-            for *xyxy, conf, cls in results.xyxy[0]:
-                if conf>0.5:
-                    label = f'{model.names[int(cls)]} {conf:.2f}'
-                    cv2.rectangle(frame, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (0,0,255), 2)
-                    cv2.putText(frame, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2)
-
             #frame3 = cv2.flip(current_frame_small, 1)
             frame3 = current_frame_small
             cv2image2 = cv2.cvtColor(frame3, cv2.COLOR_BGR2RGBA)
@@ -582,34 +488,35 @@ def upload_vid_func():
                                     cv2.imwrite("res_"+filename, current_frame_small)
                                     cv2.imwrite(filename, img_resize)
 
-                                    url = 'https://produk-inovatif.com/latihan/galian/galian.php?ins=2'
-                                    #data = { 'tgl': '2023-10-26', 'jam': '21:31:00', 'muatan': '1', 'pintu': '4', 'filename': 'test.jpg', 'source': 'upload'}
-                                    data = { 'tgl': tgl, 'jam': jam, 'muatan': '0', 'pintu': str(PINTU), 'filename': filename, 'source': 'recorded'}
+                                    if connect():
+                                        url = 'https://produk-inovatif.com/latihan/galian/galian.php?ins=2'
+                                        #data = { 'tgl': '2023-10-26', 'jam': '21:31:00', 'muatan': '1', 'pintu': '4', 'filename': 'test.jpg', 'source': 'upload'}
+                                        data = { 'tgl': tgl, 'jam': jam, 'muatan': '0', 'pintu': str(PINTU), 'filename': filename, 'source': 'recorded'}
 
-                                    head = {'Content-Type' : 'application/x-www-form-urlencoded'}
-                                    x = requests.post(url, data=data, headers=head)
-
-
-                                    print(x.text)
-
-                                    #----- update data di tbtempdata
-                                    url = 'https://produk-inovatif.com/latihan/galian/galian.php?muatan=2'
-                                    #data = {  'sabes': '2', 'batubelah': '0', 'pintu': '2'}
-                                    data = {   'tgl': tgl, 'jam': jam,'muatan': '0', 'pintu': str(PINTU)}
-
-                                    head = {'Content-Type' : 'application/x-www-form-urlencoded'}
-                                    x = requests.post(url, data=data, headers=head)
-
-                                    print(x.text)
+                                        head = {'Content-Type' : 'application/x-www-form-urlencoded'}
+                                        x = requests.post(url, data=data, headers=head)
 
 
+                                        print(x.text)
 
-                                    dfile = open(filename, "rb").read()
+                                        #----- update data di tbtempdata
+                                        url = 'https://produk-inovatif.com/latihan/galian/galian.php?muatan=2'
+                                        #data = {  'sabes': '2', 'batubelah': '0', 'pintu': '2'}
+                                        data = {   'tgl': tgl, 'jam': jam,'muatan': '0', 'pintu': str(PINTU)}
 
-                                    url_img = 'https://produk-inovatif.com/latihan/galian/img_py.php'
-                                    files= {'file': (filename,dfile,'image/jpg',{'Expires': '0'}) }
-                                    test_res = requests.post(url_img, files =  files)
-                                    print(test_res)
+                                        head = {'Content-Type' : 'application/x-www-form-urlencoded'}
+                                        x = requests.post(url, data=data, headers=head)
+
+                                        print(x.text)
+
+
+
+                                        dfile = open(filename, "rb").read()
+
+                                        url_img = 'https://produk-inovatif.com/latihan/galian/img_py.php'
+                                        files= {'file': (filename,dfile,'image/jpg',{'Expires': '0'}) }
+                                        test_res = requests.post(url_img, files =  files)
+                                        print(test_res)
 
                                 if (cy > 250) and (int(cls) == 2) and (skip_double == 0):
                                     skip_double = 1
@@ -630,34 +537,35 @@ def upload_vid_func():
                                     cv2.imwrite("res_"+filename, current_frame_small)
                                     cv2.imwrite(filename, img_resize)
 
-                                    # ----- simpan data di tbLog
-                                    url = 'https://produk-inovatif.com/latihan/galian/galian.php?ins=2'
-                                    #data = { 'tgl': '2023-10-26', 'jam': '21:31:00', 'muatan': '1', 'pintu': '4', 'filename': 'test.jpg', 'source': 'upload'}
-                                    data = { 'tgl': tgl, 'jam': jam, 'muatan': '1', 'pintu': str(PINTU), 'filename': filename, 'source': 'recorded'}
+                                    if connect():
+                                        # ----- simpan data di tbLog
+                                        url = 'https://produk-inovatif.com/latihan/galian/galian.php?ins=2'
+                                        #data = { 'tgl': '2023-10-26', 'jam': '21:31:00', 'muatan': '1', 'pintu': '4', 'filename': 'test.jpg', 'source': 'upload'}
+                                        data = { 'tgl': tgl, 'jam': jam, 'muatan': '1', 'pintu': str(PINTU), 'filename': filename, 'source': 'recorded'}
 
-                                    head = {'Content-Type' : 'application/x-www-form-urlencoded'}
-                                    x = requests.post(url, data=data, headers=head)
+                                        head = {'Content-Type' : 'application/x-www-form-urlencoded'}
+                                        x = requests.post(url, data=data, headers=head)
 
 
-                                    print(x.text)
+                                        print(x.text)
 
-                                    #----- update data di tbtempdata
-                                    url = 'https://produk-inovatif.com/latihan/galian/galian.php?muatan=2'
-                                    #data = {  'sabes': '2', 'batubelah': '0', 'pintu': '2'}
-                                    data = {  'tgl': tgl, 'jam': jam, 'muatan': '1', 'pintu': str(PINTU)}
+                                        #----- update data di tbtempdata
+                                        url = 'https://produk-inovatif.com/latihan/galian/galian.php?muatan=2'
+                                        #data = {  'sabes': '2', 'batubelah': '0', 'pintu': '2'}
+                                        data = {  'tgl': tgl, 'jam': jam, 'muatan': '1', 'pintu': str(PINTU)}
 
-                                    head = {'Content-Type' : 'application/x-www-form-urlencoded'}
-                                    x = requests.post(url, data=data, headers=head)
+                                        head = {'Content-Type' : 'application/x-www-form-urlencoded'}
+                                        x = requests.post(url, data=data, headers=head)
 
-                                    print(x.text)
+                                        print(x.text)
 
-                                    #------ upload file gambar dan simpan diserver
-                                    dfile = open(filename, "rb").read()
+                                        #------ upload file gambar dan simpan diserver
+                                        dfile = open(filename, "rb").read()
 
-                                    url_img = 'https://produk-inovatif.com/latihan/galian/img_py.php'
-                                    files= {'file': (filename,dfile,'image/jpg',{'Expires': '0'}) }
-                                    test_res = requests.post(url_img, files =  files)
-                                    print(test_res)
+                                        url_img = 'https://produk-inovatif.com/latihan/galian/img_py.php'
+                                        files= {'file': (filename,dfile,'image/jpg',{'Expires': '0'}) }
+                                        test_res = requests.post(url_img, files =  files)
+                                        print(test_res)
                                 if (cy <= 200) and ((int(cls) == 1) or (int(cls) == 2)):
                                     skip_double = 0
 
@@ -786,5 +694,6 @@ entry1.insert(0, val_rtsp)
 lbl_cy['text']= ": " + str(PINTU)
 lbl_rtsp1val['text']= ": " + val_rtsp
 #get_location()
+cctv_func()
 
 root.mainloop()
