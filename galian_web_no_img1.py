@@ -703,6 +703,6 @@ entry1.insert(0, val_rtsp)
 lbl_cy['text']= ": " + str(PINTU)
 lbl_rtsp1val['text']= ": " + val_rtsp
 #get_location()
-#cctv_func()
+cctv_func()
 
 root.mainloop()
