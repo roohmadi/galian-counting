@@ -255,6 +255,7 @@ def cctv_func():
         os.remove("tempImgDetect.jpg")
 
     #cap = cv2.VideoCapture('C:\\Users\\roohm\\vehicle-counting-yolov5\\data\\video\\sabesdouble.mp4')
+    #cap = cv2.VideoCapture('E:\\YOLO\\counting\\vechicle-counting-yolo-main\\Crash Kalteng3.mp4')
     cap = cv2.VideoCapture(val_rtsp)
 
     display_frame2 = tk.Frame(root)
