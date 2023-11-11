@@ -255,6 +255,7 @@ def cctv_func():
         os.remove("tempImgDetect.jpg")
 
     #cap = cv2.VideoCapture('C:\\Users\\roohm\\vehicle-counting-yolov5\\data\\video\\sabesdouble.mp4')
+    #cap = cv2.VideoCapture('E:\\YOLO\\counting\\vechicle-counting-yolo-main\\Crash Kalteng3.mp4')
     cap = cv2.VideoCapture(val_rtsp)
 
     display_frame2 = tk.Frame(root)
@@ -702,6 +703,6 @@ entry1.insert(0, val_rtsp)
 lbl_cy['text']= ": " + str(PINTU)
 lbl_rtsp1val['text']= ": " + val_rtsp
 #get_location()
-#cctv_func()
+cctv_func()
 
 root.mainloop()
