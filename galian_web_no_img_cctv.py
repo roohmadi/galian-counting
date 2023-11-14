@@ -71,6 +71,8 @@ production = False
 
 
 global skip_double,sabes_count, batu_count, cntFileSaveSabes, cntFileSaveBatu, PINTU, img_del_date, host, weight_file
+global cntdot
+cntdot = 0
 skip_double = 0
 sabes_count =  0
 batu_count = 0
@@ -82,7 +84,7 @@ if production:
     host = 'https://produk-inovatif.com/latihan/galian'
 else:
     OSWindows = True
-    host = 'https://produk-inovatif.com/latihan/galian'
+    host = 'https://produk-inovatif.com/latihan/galiantes'
 
 
 from configparser import ConfigParser
@@ -244,14 +246,14 @@ def cctv_func():
     cap = cv2.VideoCapture(val_rtsp)
 
     display_frame2 = tk.Frame(root)
-    display_frame2.place(relx=0.5, rely=0.3, width = 800, height = 900, anchor=tk.CENTER)
+    display_frame2.place(relx=0.6, rely=0.3, width = 800, height = 900, anchor=tk.CENTER)
 
 
     lmain1 = tk.Label(display_frame2)
     lmain1.place(x = 0, y = 0, width=800, height=900)
 
     def show_frame():
-            global skip_double,sabes_count, batu_count, cntFileSaveBatu, cntFileSaveSabes, cntFlag
+            global skip_double,sabes_count, batu_count, cntFileSaveBatu, cntFileSaveSabes, cntFlag, cntdot
             _, frame = cap.read()
             if frame is None:
                 return
@@ -260,8 +262,13 @@ def cctv_func():
             current_frame_small = cv2.resize(frame,(0,0),fx=0.35,fy=0.35)
             # Perform inference
             results = model(current_frame_small)
-            print(".")
-            lbl_val['text']=  "...."
+            if cntdot > 4:
+                #print(".")
+                cntdot = 0
+            cntdot +=1
+            print(cntdot)
+            lbl_val['text']=  ": None"
+            lbl_rtsp1val['text']=  ": " + str(cntdot)
             reUPLOAD_img()
             delete_old_img()
 
@@ -281,7 +288,7 @@ def cctv_func():
                 #lbl_val['text']= "skp: " + str(skip_double)
                 if conf>0.5:
                     label = f'{model.names[int(cls)]} {conf:.2f}'
-                    lbl_val['text']=  label #"skp: " + str(skip_double)
+                    lbl_val['text']=  ": " + label #"skp: " + str(skip_double)
                     print(label)
                     if imageVal:
                         if(int(cls) == 1) or (int(cls) == 2):
@@ -473,6 +480,35 @@ def reUPLOAD_img():
         else:
             if UploadIMG(fileN,os.path.join(os.getcwd() + "/images/", fileN),fileN[-6],'re-upload'):
                 print("Upload offline suksess...")
+def init_imgTemp():
+    isExistTempImg = os.path.exists(path_imgTemp)
+    print(path_imgTemp)
+    print(isExistTempImg)
+    if isExistTempImg:
+        os.remove("tempImg.jpg")
+    isExistTempImgDetect = os.path.exists(path_imgTempDetect)
+    if isExistTempImgDetect:
+        os.remove("tempImgDetect.jpg")
+
+def video_proccess(current_frame_small):
+    global skip_double,sabes_count, batu_count, cntFileSaveBatu, cntFileSaveSabes, cntFlag,cntdot
+    results = model(current_frame_small)
+    if cntdot > 4:
+        #print(".")
+        cntdot = 0
+    cntdot +=1
+    print(cntdot)
+    lbl_val['text']=  ": None"
+    lbl_rtsp1val['text']=  ": " + str(cntdot)
+
+    reUPLOAD_img()
+    delete_old_img()
+
+    if cntFlag==0:
+        cv2.imwrite("tempImgDetect.jpg", current_frame_small)
+        cntFlag = 1
+
+
 
 def upload_vid_func():
     print(imageVal)
@@ -499,7 +535,7 @@ def upload_vid_func():
             lmain1.place(x = 0, y = 0, width=800, height=900)
 
             def show_frame():
-                    global skip_double,sabes_count, batu_count, cntFileSaveBatu, cntFileSaveSabes, cntFlag
+                    global skip_double,sabes_count, batu_count, cntFileSaveBatu, cntFileSaveSabes, cntFlag,cntdot
                     _, frame = cap.read()
                     if frame is None:
                         return
@@ -511,8 +547,13 @@ def upload_vid_func():
                     current_frame_small = cv2.resize(frame,(0,0),fx=0.35,fy=0.35)
                     # Perform inference
                     results = model(current_frame_small)
-                    print(".")
-                    lbl_val['text']=  "...."
+                    if cntdot > 4:
+                        #print(".")
+                        cntdot = 0
+                    cntdot +=1
+                    print(cntdot)
+                    lbl_val['text']=  ": None"
+                    lbl_rtsp1val['text']=  ": " + str(cntdot)
 
                     reUPLOAD_img()
                     delete_old_img()
@@ -534,7 +575,7 @@ def upload_vid_func():
                         lbl_batu['text']= ": " + str(batu_count)
 
                         label = f'{model.names[int(cls)]} {conf:.2f}'
-                        lbl_val['text']=  label #"skp: " + str(skip_double)
+                        lbl_val['text']=  ": " + label #"skp: " + str(skip_double)
                         print(label)
 
 
@@ -669,6 +710,13 @@ def Stop():
 	btn_Single["state"] = NORMAL
 	btn_rdcsv["state"] = NORMAL
 	btn_wrcsv["state"] = NORMAL
+
+def close_cctv():
+    #cap.release()
+    # Destroy all the windows
+    #cv2.destroyAllWindows()
+    root.destroy
+
 #----end function ------
 #reUPLOAD_img
 btn_rdcsv = Button(fr_button, text="Webcam", command=web_cam_func)
@@ -716,15 +764,15 @@ lbl_phase_min.grid(row=18, column=0, padx=10, pady=5, sticky="w")
 lbl_cy = Label(fr_button, text=": 0", font=('Times 14'))
 lbl_cy.grid(row=18, column=1, padx=5, pady=5, sticky="w")
 
-lbl_phase_max = Label(fr_button, text="Object: None", font=('Times 14'))
-#lbl_phase_max.grid(row=19, column=0, padx=10, pady=5, sticky="w")
-lbl_val = Label(fr_button, text="Object: None", font=('Times 14'))
-lbl_val.grid(row=19, column=0, padx=5, pady=5, sticky="w")
+lbl_phase_max = Label(fr_button, text="Object ", font=('Times 14'))
+lbl_phase_max.grid(row=19, column=0, padx=10, pady=5, sticky="w")
+lbl_val = Label(fr_button, text=": None", font=('Times 14'))
+lbl_val.grid(row=19, column=1, padx=5, pady=5, sticky="w")
 
-lbl_rtsp1 = Label(fr_button, text="RTSP", font=('Times 14'))
-#lbl_rtsp1.grid(row=20, column=0, padx=10, pady=5, sticky="w")
-lbl_rtsp1val = Label(fr_button, text=": 0", font=('Times 14'))
-#lbl_rtsp1val.grid(row=20, column=1, padx=5, pady=5, sticky="w")
+lbl_rtsp1 = Label(fr_button, text="Status: ", font=('Times 14'))
+lbl_rtsp1.grid(row=20, column=0, padx=10, pady=5, sticky="w")
+lbl_rtsp1val = Label(fr_button, text=": None", font=('Times 14'))
+lbl_rtsp1val.grid(row=20, column=1, padx=5, pady=5, sticky="w")
 
 # textbox
 lbl_rtsp = Label(fr_button, text="RTSP: ", font=('Times 14'))
@@ -746,7 +794,7 @@ fr_result.grid(row=0, column=2, sticky="nsew")
 
 entry1.insert(0, val_rtsp)
 lbl_cy['text']= ": " + str(PINTU)
-lbl_rtsp1val['text']= ": " + val_rtsp
+#lbl_rtsp1val['text']= ": " + val_rtsp
 #get_location()
 
 if production:
