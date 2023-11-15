@@ -26,6 +26,7 @@ class App:
         # Button that lets the user take a snapshot
         self.btn_snapshot=tkinter.Button(window, text="Snapshot", width=50, command=self.snapshot)
         self.btn_snapshot.pack(anchor=tkinter.CENTER, expand=True)
+        
 
         # After it is called once, the update method will be automatically called every delay milliseconds
         self.delay = 15
