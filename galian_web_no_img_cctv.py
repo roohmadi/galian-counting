@@ -66,7 +66,32 @@ saveTempImgFlag = False
 production = False
 
 
+class MyVideoCapture:
+    def __init__(self, video_source=0):
+        # Open the video source
+        self.vid = cv2.VideoCapture(video_source)
+        if not self.vid.isOpened():
+            raise ValueError("Unable to open video source", video_source)
 
+        # Get video source width and height
+        self.width = self.vid.get(cv2.CAP_PROP_FRAME_WIDTH)
+        self.height = self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
+
+    def get_frame(self):
+        if self.vid.isOpened():
+            ret, frame = self.vid.read()
+            if ret:
+                # Return a boolean success flag and the current frame converted to BGR
+                return (ret, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            else:
+                return (ret, None)
+        else:
+            return (ret, None)
+
+    # Release the video source when the object is destroyed
+    def __del__(self):
+        if self.vid.isOpened():
+            self.vid.release()
 
 
 
@@ -231,8 +256,59 @@ def get_location():
     ip_add = requests.get('http://ip.42.pl/raw').text#input("Enter IP: ")  # 198.35.26.96
     printDetails(ip_add)
 
+def cctv_func(self):
+    #width, height = 1000, 1000
+    #cap = cv2.VideoCapture(0)
+    #cap = cv2.VideoCapture('rtsp://admin:admin82@192.168.1.3:554/unicast/c1/s0/live')
+    #cap = cv2.VideoCapture(val_rtsp)
+    cap = MyVideoCapture(self.video_source)
+    #if not cap.isOpened():
+    #        raise ValueError("Unable to open video source", val_rtsp)
 
-def cctv_func():
+    #cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    #cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+
+
+    display_frame2 = tk.Frame(root)
+    display_frame2.place(relx=0.5, rely=0.3, width = 800, height = 900, anchor=tk.CENTER)
+
+
+    lmain1 = tk.Label(display_frame2)
+    lmain1.place(x = 0, y = 0, width=800, height=900)
+
+    def show_frame():
+        ret, frame = self.vid.get_frame()
+
+        if frame is None:
+            return
+        else:
+            w, h = frame.shape[1],frame.shape[0]
+        current_frame_small = cv2.resize(frame,(0,0),fx=0.35,fy=0.35)
+        # Perform inference
+        results = model(current_frame_small)
+
+        # Parse results and draw bounding boxes
+        for *xyxy, conf, cls in results.xyxy[0]:
+            if conf>0.5:
+                label = f'{model.names[int(cls)]} {conf:.2f}'
+                cv2.rectangle(frame, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (0,0,255), 2)
+                cv2.putText(frame, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2)
+
+            #frame3 = cv2.flip(current_frame_small, 1)
+        frame3 = current_frame_small
+        cv2image2 = cv2.cvtColor(frame3, cv2.COLOR_BGR2RGBA)
+        img2 = Image.fromarray(cv2image2)
+
+        imgtk2 = ImageTk.PhotoImage(image=img2)
+
+        lmain1.imgtk = imgtk2
+        lmain1.configure(image=imgtk2)
+            
+        lmain1.after(10, show_frame)
+        
+    show_frame()
+
+def cctv_funcOLD():
     isExistTempImg = os.path.exists(path_imgTemp)
     print(path_imgTemp)
     print(isExistTempImg)
@@ -719,10 +795,10 @@ def close_cctv():
 
 #----end function ------
 #reUPLOAD_img
-btn_rdcsv = Button(fr_button, text="Webcam", command=web_cam_func)
+btn_rdcsv = Button(fr_button, text="Close CCTV", command=web_cam_func)
 #btn_rdcsv = Button(fr_button, text="Webcam", command=delete_old_img())
 btn_wrcsv = Button(fr_button, text="Upload Video", command=upload_vid_func)
-btn_baseline = Button(fr_button, text="CCTV",command=cctv_func)
+self.btn_baseline = Button(fr_button, text="Open CCTV",command=self.cctv_func)
 btn_quit = Button(fr_button, text="Quit", command=root.destroy)
 
 btn_rdcsv.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
@@ -734,6 +810,7 @@ btn_rdcsv.config(width=10, height=5)
 btn_wrcsv.config(width=10, height=5)
 btn_baseline.config(width=10, height=5)
 btn_quit.config(width=10, height=5)
+btn_rdcsv["state"]=DISABLED
 #-------------------------------------
 
 
@@ -800,4 +877,4 @@ lbl_cy['text']= ": " + str(PINTU)
 if production:
     cctv_func()
 
-root.mainloop()
+root.mainloop(self)
