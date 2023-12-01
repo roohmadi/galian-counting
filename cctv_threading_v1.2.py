@@ -165,10 +165,10 @@ class CCTVStream :
             #print(os.path.join(os.getcwd() + "\\images\\", fileN))
             #print(fileN[-6])
             if OSWindows:
-                if cctv_stream.UploadIMG(fileN,os.path.join(os.getcwd() + "\\images\\", fileN),fileN[-6],'re-upload'):
+                if cctv_stream.UploadIMGtoPedati(fileN,os.path.join(os.getcwd() + "\\images\\", fileN),fileN[-6],'re-upload'):
                     print("Upload offline suksess...")
             else:
-                if cctv_stream.UploadIMG(fileN,os.path.join(os.getcwd() + "/images/", fileN),fileN[-6],'re-upload'):
+                if cctv_stream.UploadIMGtoPedati(fileN,os.path.join(os.getcwd() + "/images/", fileN),fileN[-6],'re-upload'):
                     print("Upload offline suksess...")
 
     def delete_old_img(self):
@@ -231,6 +231,26 @@ class CCTVStream :
             #test_res = requests.post(host, data=data)
             print(test_res)
             print(test_res.text)
+            if test_res.ok:
+                isExistTempImg = os.path.exists(filename)
+                if isExistTempImg:
+                    x = filename.split("_")
+                    xxpath = x[0]
+                    panj = len(xxpath)
+                    imgUPL = xxpath[panj-3:panj]
+                    #print(xxpath[panj-3:panj])
+                    #print(imgUPL)
+                    if (imgUPL == 'upl'):
+                        print("file upl sudah ada")
+                    else:
+                        newfilename = path_img + "upl_" + filenameSave
+                        newfileloc = path_imgupl + "upl_" + filenameSave
+
+                        os.rename(filename, newfilename)
+                        shutil.move(newfilename,newfileloc)
+                        print("sudah rename: ")
+
+                    return True
 
     def UploadIMG(self,filenameSave, filename, muatan, source):
         if cctv_stream.connect():
@@ -377,7 +397,7 @@ while True :
                             cv2.imwrite(filename, img_resize)
                             cv2.imwrite("tempImg.jpg", current_frame_small)
                             
-                            cctv_stream.UploadIMG( filenameSave,filename, cls,'recorded')
+                            #cctv_stream.UploadIMG( filenameSave,filename, cls,'recorded')
                             cctv_stream.UploadIMGtoPedati(filenameSave, filename, cls, 'live')
 
                         if (cy > YlineDetect) and (int(cls) == 2) and (skip_double == 0):
@@ -401,7 +421,7 @@ while True :
                             cv2.imwrite("tempImg.jpg", current_frame_small)
                             #cv2.imwrite(filename, img_resize)
 
-                            cctv_stream.UploadIMG(filenameSave,filename, cls,'recorded')
+                            #cctv_stream.UploadIMG(filenameSave,filename, cls,'recorded')
                             cctv_stream.UploadIMGtoPedati(filenameSave, filename, cls, 'live')
                         if (cy <= 200) and ((int(cls) == 1) or (int(cls) == 2)):
                             skip_double = 0
