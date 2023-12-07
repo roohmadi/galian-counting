@@ -48,6 +48,8 @@ from tkinter import filedialog as fd
 import datetime
 from datetime import date
 
+global  YlineDetect
+YlineDetect = 230
 
 # importing "cmath" for complex number operations
 import cmath
@@ -223,22 +225,22 @@ class App:
         # entry1.pack(side = TOP, ipadx = 30, ipady = 6)
         #entry1.grid(row=26, column=0, padx=5, pady=5, sticky="w")
 # -------
-        if production:
+        #if production:
         #    print("TEESS")
         #else:
-            self.video_source = val_rtsp
+        #    self.video_source = val_rtsp
 
             # open video source (by default this will try to open the computer webcam)
-            self.vid = MyVideoCapture(self.video_source)
+        #    self.vid = MyVideoCapture(self.video_source)
 
-            display_frame2 = tkinter.Frame(self.window)
-            display_frame2.place(relx=0.6, rely=0.3, width = 800, height = 900, anchor=tkinter.CENTER)
-            self.lmain1 = tkinter.Label(display_frame2)
-            self.lmain1.place(x = 0, y = 0, width=800, height=900)
+        #    display_frame2 = tkinter.Frame(self.window)
+        #    display_frame2.place(relx=0.6, rely=0.3, width = 800, height = 900, anchor=tkinter.CENTER)
+        #    self.lmain1 = tkinter.Label(display_frame2)
+        #    self.lmain1.place(x = 0, y = 0, width=800, height=900)
 
             # After it is called once, the update method will be automatically called every delay milliseconds
-            self.delay = 10
-            self.update()
+        #    self.delay = 10
+        #    self.update()
 
         # Button that lets the user take a snapshot
         #self.btn_snapshot=tkinter.Button(window, text="Snapshot", width=50, command=self.snapshot)
@@ -423,13 +425,6 @@ class App:
                     return True
     
     def update_img_temp (self,frameTemp):
-        #cv2image2 = cv2.cvtColor(frameTemp, cv2.COLOR_BGR2RGBA)
-        #img2 = Image.fromarray(cv2image2)
-        #imgtk2 = ImageTk.PhotoImage(image=img2)
-        
-        #self.lmain1.imgtk = imgtk2
-        #self.lmain1.configure(image=imgtk2)
-        
         frame3 = frameTemp
         cv2image2 = cv2.cvtColor(frame3, cv2.COLOR_BGR2RGBA)
         img2 = Image.fromarray(cv2image2)
@@ -467,16 +462,18 @@ class App:
 
                 def show_frame():
                     global skip_double,sabes_count, batu_count, cntFileSaveBatu, cntFileSaveSabes, cntFlag,cntdot
+                    global chtruk
                     _, frame = cap.read()
                     if frame is None:
                         return
                     else:
                         w, h = frame.shape[1],frame.shape[0]
                     current_frame_small = cv2.resize(frame,(0,0),fx=1,fy=1)
+                    #current_frame_small = cv2.resize(frame,(0,0),fx=0.35,fy=0.35)
                     
                     if cntdot > self.fps:
                         cntdot = 0
-                    if cntdot == (self.fps/5):
+                    if (cntdot % 4) == 0  :
                         results = model(current_frame_small)
                         
                         self.lbl_val['text'] = ": None"
@@ -492,17 +489,45 @@ class App:
                         for *xyxy, conf, cls in results.xyxy[0]:
                             cx, cy = (int(xyxy[0]+(xyxy[2]-xyxy[0])/2),
                                   int(xyxy[1]+(xyxy[3]-xyxy[1])/2))
-                            cv2.line(current_frame_small, (0, 250),
-                                 (w, 250), (0, 255, 0), thickness=3)
+                            cv2.line(current_frame_small, (0, YlineDetect),
+                                 (w, YlineDetect), (0, 255, 0), thickness=3)
+                            cv2.rectangle(current_frame_small, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (0,255,255), 2)
                             self.lbl_sabes['text'] = ": " + str(sabes_count)
                             self.lbl_batu['text'] = ": " + str(batu_count)
-                            label = f'{model.names[int(cls)]} {conf:.2f}'
+                            label = f'{model.names[int(cls)]} {conf:.2f} {cls}'
                             print(label)
                             if conf>0.5:
                                 #label = f'{model.names[int(cls)]} {conf:.2f}'
                                 label = f'{model.names[int(cls)]}'
                                 self.lbl_val['text']=  ": " + label
                                 if imageVal:
+                                    if((int(cls) == 1) or (int(cls) == 2)) and (int(cls)==0):
+                                        cv2.rectangle(current_frame_small, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (0,255,255), 2)
+                                        cv2.putText(current_frame_small, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,255), 2)
+
+                                        current_time = datetime.datetime.now()
+                                        tgl = str(current_time.year) + "-" + str(current_time.month) + "-" + str(current_time.day)
+                                        jam = str(current_time.hour) + ":" + str(current_time.minute) + ":" + str(current_time.second)
+
+                                        filenameSave = "ALL_Img_" + str(current_time.year) + "_" + str(current_time.month) + "_" + str(current_time.day) +"_" + str(current_time.hour) + "_" + str(current_time.minute) + "_" + str(current_time.second) + "_0S.jpg"
+                                        if OSWindows:
+                                            filename = os.path.join(os.getcwd() + "\\images\\", "res_"+filenameSave)
+                                        else:
+                                            filename = os.path.join(os.getcwd() + "/images/", "res_"+filenameSave)
+
+                                        print(filename)
+
+
+                                        img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
+                                        cv2.imwrite(filename, img_resize)
+                                    if (cy > (YlineDetect-100)) and (int(cls) == 0) and (skip_double == 0):
+                                        chtruk  = 1
+
+
+                                    if(int(cls) == 0) and (int(cls) == 2):
+                                        cv2.line(current_frame_small, (0, YlineDetect-50),
+                                             (w, YlineDetect-50), (0, 255, 255), thickness=3)
+
                                     if(int(cls) == 1) or (int(cls) == 2):
                                         if (int(cls) == 1):
                                             cv2.rectangle(current_frame_small, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (0,255,255), 2)
@@ -510,7 +535,7 @@ class App:
                                         if (int(cls) == 2):
                                             cv2.rectangle(current_frame_small, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (255,255,0), 2)
                                             cv2.putText(current_frame_small, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,0), 2)
-                                if (cy > 250) and (int(cls) == 1) and (skip_double == 0):
+                                if (cy > YlineDetect) and (int(cls) == 1) and (skip_double == 0) and (chtruk == 1):
                                     skip_double = 1
                                     sabes_count += 1
 
@@ -537,7 +562,7 @@ class App:
 
                                     #self.UploadIMG( filenameSave,filename, '0','recorded')
 
-                                if (cy > 250) and (int(cls) == 2) and (skip_double == 0):
+                                if (cy > YlineDetect) and (int(cls) == 2) and (skip_double == 0) and (chtruk == 1):
                                     skip_double = 1
                                     batu_count += 1
 
@@ -560,8 +585,9 @@ class App:
                                     #cv2.imwrite(filename, img_resize)
 
                                     #self.UploadIMG(filenameSave,filename, '1','recorded')
-                                if (cy <= 200) and ((int(cls) == 1) or (int(cls) == 2)):
+                                if (cy <= (YlineDetect-50)) and ((int(cls) == 1) or (int(cls) == 2)):
                                     skip_double = 0
+                                    chtruk  = 0
                         
                         #-----
                         cv2image2 = cv2.cvtColor(current_frame_small, cv2.COLOR_BGR2RGBA)
@@ -573,7 +599,7 @@ class App:
                         
                         
                     cntdot +=1
-                    print(cntdot)
+                    #print(cntdot)
                     self.lbl_rtsp1val['text'] = ": " + str(cntdot)
                     #print(cntdot)
                     
