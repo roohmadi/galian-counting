@@ -16,12 +16,11 @@ from os.path import exists
 import requests
 
 global skip_double,sabes_count, batu_count, cntFileSaveSabes, cntFileSaveBatu, PINTU, img_del_date, host, weight_file, OStype
-global cntdot, fps, tempCy, chtruk, skip_double0, chtruk0
+global cntdot, fps, tempCy, chtruk
 global  YlineDetect0,YlineDetect1
 YlineDetect1 = 230
-chtruk0 = 0
-skip_double0 = 0
 YlineDetect0 = 100
+
 tempCy = 0
 chtruk = 0
 fps = 0
@@ -213,12 +212,6 @@ class CCTVStream :
                             print("file " + fileN + " telah dihapus")
                                 #else:
                                     #    print("NONE")
-    def get_date_time (self):
-        current_time = datetime.datetime.now()
-        tgl = str(current_time.year) + "-" + str(current_time.month) + "-" + str(current_time.day)
-        jam = str(current_time.hour) + ":" + str(current_time.minute) + ":" + str(current_time.second)
-        str_date_time = str(current_time.year) + "_" + str(current_time.month) + "_" + str(current_time.day) +"_" + str(current_time.hour) + "_" + str(current_time.minute) + "_" + str(current_time.second)
-        return str_date_time
 
     def UploadIMGtoPedati(self,filenameSave, filename, muatan, source):
         from datetime import datetime
@@ -268,9 +261,211 @@ class CCTVStream :
 
                     return True
 
+    def UploadIMG(self,filenameSave, filename, muatan, source):
+        if cctv_stream.connect():
+            current_time = datetime.datetime.now()
+            tgl = str(current_time.year) + "-" + \
+                str(current_time.month) + "-" + str(current_time.day)
+            jam = str(current_time.hour) + ":" + \
+                str(current_time.minute) + ":" + str(current_time.second)
+
+            #url = 'https://produk-inovatif.com/latihan/galian/galian.php?ins=2'
+            #url = 'https://produk-inovatif.com/latihan/galian/galian.php?ins=2'
+            url = host + '/galian.php?ins=2'
+            #print (url)
+            #data = { 'tgl': '2023-10-26', 'jam': '21:31:00', 'muatan': '1', 'pintu': '4', 'filename': 'test.jpg', 'source': 'upload'}
+            data = {'tgl': tgl, 'jam': jam, 'muatan': muatan, 'pintu': str(
+                PINTU), 'filename': filenameSave, 'source': source}
+
+            head = {'Content-Type': 'application/x-www-form-urlencoded'}
+            x = requests.post(url, data=data, headers=head)
+
+            print(x.text)
+
+            #----- update data di tbtempdata
+            #url = 'https://produk-inovatif.com/latihan/galian/galian.php?muatan=2'
+            #url = 'https://produk-inovatif.com/latihan/galian/galian.php?muatan=2'
+            url = host + '/galian.php?muatan=2'
+            #print (url)
+            #data = {  'sabes': '2', 'batubelah': '0', 'pintu': '2'}
+            data = {'tgl': tgl, 'jam': jam, 'muatan': muatan, 'pintu': str(PINTU)}
+
+            head = {'Content-Type': 'application/x-www-form-urlencoded'}
+            x = requests.post(url, data=data, headers=head)
+
+            #print(x.text)
+
+            dfile = open(filename, "rb").read()
+
+            #url_img = 'https://produk-inovatif.com/latihan/galian/img_py.php'
+            #url_img = 'https://produk-inovatif.com/latihan/galian/img_py.php'
+            url_img = host + '/img_py.php'
+            #print (url_img)
+            files = {'file': (filenameSave, dfile, 'image/jpg', {'Expires': '0'})}
+            test_res = requests.post(url_img, files=files)
+            #print(test_res)
+            #print(test_res.ok)
+            if test_res.ok:
+                isExistTempImg = os.path.exists(filename)
+                #print(isExistTempImg)
+                if isExistTempImg:
+                    #img_del_date
+                    #os.remove(filename)
+                    #print("belum rename: ")
+                    #print(filename)
+                    x = filename.split("_")
+                    xxpath = x[0]
+                    panj = len(xxpath)
+                    imgUPL = xxpath[panj-3:panj]
+                    #print(xxpath[panj-3:panj])
+                    #print(imgUPL)
+                    if (imgUPL == 'upl'):
+                        print("file upl sudah ada")
+                    else:
+                        newfilename = path_img + "upl_" + filenameSave
+                        newfileloc = path_imgupl + "upl_" + filenameSave
+
+                        os.rename(filename, newfilename)
+                        shutil.move(newfilename,newfileloc)
+                        print("sudah rename: ")
+
+                    return True
+
+    def detect_muatan(self, results, current_frame_small,w):
+        global skip_double,sabes_count, batu_count, cntFileSaveBatu, cntFileSaveSabes, cntFlag
+        global chtruk, tempCy, arah
+        global skip_double0, chtruk0
+             #print("detect muatan")
+        for *xyxy, conf, cls in results.xyxy[0]:
+            cx, cy = (int(xyxy[0]+(xyxy[2]-xyxy[0])/2),
+                  int(xyxy[1]+(xyxy[3]-xyxy[1])/2))
+            print("cy: " + str(cy) + "   cyTemp: " + str(tempCy))
+
+            self.lbl_sabes['text'] = ": " + str(sabes_count)
+            self.lbl_batu['text'] = ": " + str(batu_count)
+            label = f'{model.names[int(cls)]} {conf:.2f} {cls}'
+            print(label)
+            if conf>0.5:
+                #label = f'{model.names[int(cls)]} {conf:.2f}'
+                label = f'{model.names[int(cls)]}'
+                self.lbl_val['text']=  ": " + label
+                if imageVal:
+                    if (cy < tempCy):
+                        arah = 0
+                        tempCy = cy
+                        # RED
+                        cv2.line(current_frame_small, (0, YlineDetect1),(w, YlineDetect1), (0,0, 255), thickness=3)
+                    elif (cy > tempCy) and (chtruk == 1):
+                        tempCy = cy
+                        arah = 1
+                        # GREEN
+                        cv2.line(current_frame_small, (0, YlineDetect1),(w, YlineDetect1), (0,255, 0), thickness=3)
+                    #--- chek jika ada truk lewat
+                    if (cy > (YlineDetect0-100)) and (int(cls) == 0) and (skip_double0 == 0):
+                        chtruk0  = 1
+                    if (cy > (YlineDetect1-100)) and (int(cls) == 0) and (skip_double == 0):
+                        chtruk  = 1
+                    #---save deteksi pre muatan
+                    if((int(cls) == 1) or (int(cls) == 2)) and (arah == 1) and (chtruk0 == 1) and (skip_double0 == 0):
+                        skip_double0 = 1
+                        str_date_time = self.get_date_time()
+                        filenameSave = "preCap_Img_" + str_date_time + "_0S.jpg"
+                        if OSWindows:
+                            filename = os.path.join(os.getcwd() + "\\images\\", "res_"+filenameSave)
+                        else:
+                            filename = os.path.join(os.getcwd() + "/images/", "res_"+filenameSave)
+
+                        print(filename)
+                        img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
+                        cv2.imwrite(filename, img_resize)
+
+                    #---save deteksi muatan
+                    if((int(cls) == 1) or (int(cls) == 2)) and (int(cls)==0) and (arah == 1):
+                        str_date_time = self.get_date_time()
 
 
-# initializing and starting multi-threaded webcam capture input stream 
+                        filenameSave = "ALL_Img_" + str_date_time + "_0S.jpg"
+                        if OSWindows:
+                            filename = os.path.join(os.getcwd() + "\\images\\", "res_"+filenameSave)
+                        else:
+                            filename = os.path.join(os.getcwd() + "/images/", "res_"+filenameSave)
+
+                        print(filename)
+                        img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
+                        cv2.imwrite(filename, img_resize)
+
+                        self.UploadIMG(filenameSave,filename, '1','pre-capture')
+                        #self.UploadIMGtoPedati(filenameSave, filename, cls, 'pre-capture')
+
+
+                    if(int(cls) == 0) or (int(cls) == 1) or (int(cls) == 2):
+                        if (int(cls) == 0):
+                            cv2.rectangle(current_frame_small, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (255,255,255), 2)
+                            cv2.putText(current_frame_small, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,0), 2)
+                        if (int(cls) == 1):
+                            cv2.rectangle(current_frame_small, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (0,255,255), 2)
+                            cv2.putText(current_frame_small, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,255), 2)
+                        if (int(cls) == 2):
+                            cv2.rectangle(current_frame_small, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (255,255,0), 2)
+                            cv2.putText(current_frame_small, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,0), 2)
+
+                if (cy > YlineDetect1) and (int(cls) == 1) and (skip_double == 0) and (chtruk == 1):
+                    skip_double = 1
+                    sabes_count += 1
+                    cntFileSaveSabes +=1
+
+                    str_date_time = self.get_date_time()
+
+                    filenameSave = "Img_" + str_date_time + "_0S.jpg"
+                    if OSWindows:
+                        filename = os.path.join(os.getcwd() + "\\images\\", "res_"+filenameSave)
+                    else:
+                        filename = os.path.join(os.getcwd() + "/images/", "res_"+filenameSave)
+
+                    print(filename)
+
+
+                    img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
+                    cv2.imwrite(filename, img_resize)
+                    cv2.imwrite("tempImg.jpg", current_frame_small)
+
+                    #cv2.imwrite(filename, img_resize)
+
+                    self.UploadIMG( filenameSave,filename, '0','recorded')
+                    #self.UploadIMGtoPedati(filenameSave, filename, cls, 'recorded')
+
+                if (cy > YlineDetect1) and (int(cls) == 2) and (skip_double == 0) and (chtruk == 1):
+                    skip_double = 1
+                    batu_count += 1
+
+                    cntFileSaveBatu +=1
+                    #filename = f'savedImageBatu_{cntFileSaveBatu}.jpg'
+                    current_time = datetime.datetime.now()
+                    tgl = str(current_time.year) + "-" + str(current_time.month) + "-" + str(current_time.day)
+                    jam = str(current_time.hour) + ":" + str(current_time.minute) + ":" + str(current_time.second)
+                    filenameSave = "Img_" + str(current_time.year) + "_" + str(current_time.month) + "_" + str(current_time.day) +"_" + str(current_time.hour) + "_" + str(current_time.minute) + "_" + str(current_time.second) + "_1B.jpg"
+                    if OSWindows:
+                        filename = os.path.join(os.getcwd() + "\\images\\", "res_"+filenameSave)
+                    else:
+                        filename = os.path.join(os.getcwd() + "/images/", "res_"+filenameSave)
+                    print(filename)
+                    print(filenameSave)
+
+                    img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
+                    cv2.imwrite(filename, img_resize)
+                    cv2.imwrite("tempImg.jpg", current_frame_small)
+                    #cv2.imwrite(filename, img_resize)
+
+                    self.UploadIMG(filenameSave,filename, '1','recorded')
+                    #self.UploadIMGtoPedati(filenameSave, filename, cls, 'recorded')
+                if (cy <= (YlineDetect1-50)) and ((int(cls) == 1) or (int(cls) == 2)):
+                    skip_double = 0
+                    chtruk  = 0
+                    tempCy = 0
+
+
+
+# initializing and starting multi-threaded webcam capture input stream
 cctv_stream = CCTVStream(stream_id=val_rtsp) #  stream_id = 0 is for primary camera 
 cctv_stream.start()
 
@@ -293,118 +488,24 @@ while True :
     
     #-----main code --
     w, h = frame.shape[1],frame.shape[0]
-    current_frame_small = cv2.resize(frame,(0,0),fx=1,fy=1)
+    #current_frame_small = cv2.resize(frame,(0,0),fx=1,fy=1)
     
     
     if cntdot > fps:
         cntdot = 0
-    if (cntdot % 2) == 0  :
-        results = model(current_frame_small)
-        cctv_stream.reUPLOAD_img()
-        cctv_stream.delete_old_img()
-        for *xyxy, conf, cls in results.xyxy[0]:
-            cx, cy = (int(xyxy[0]+(xyxy[2]-xyxy[0])/2),
-                      int(xyxy[1]+(xyxy[3]-xyxy[1])/2))
-            #cv2.line(current_frame_small, (0, YlineDetect),(w, YlineDetect), (0, 255, 0), thickness=3)
-            #cv2.putText(current_frame_small, "PINTU " + str(PINTU),(350,50),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
-            #label = f'{model.names[int(cls)]} {conf:.2f}'
-            #print(label)
-            cv2.line(current_frame_small, (0, YlineDetect0),(w, YlineDetect0), (0,255, 255), thickness=3)
-            if conf>0.5:
-                label = f'{model.names[int(cls)]} {conf:.2f}'
-                print(label)
-                print(cy)
-                print(skip_double)
-                if imageVal:
-                    if (cy < tempCy):
-                        arah = 0
-                        tempCy = cy
-                        # RED
-                        cv2.line(current_frame_small, (0, YlineDetect1),(w, YlineDetect1), (0,0, 255), thickness=3)
-                    elif (cy > tempCy) and (chtruk == 1):
-                        tempCy = cy
-                        arah = 1
-                        # GREEN
-                        cv2.line(current_frame_small, (0, YlineDetect1),(w, YlineDetect1), (0,255, 0), thickness=3)
+    if (cntdot % 10) == 0  :
+        results = model(frame)
 
-                    if (cy > (YlineDetect0-100)) and (int(cls) == 0) and (skip_double0 == 0):
-                        chtruk0  = 1
-                    if (cy > (YlineDetect1-100)) and (int(cls) == 0) and (skip_double == 0):
-                        chtruk  = 1
+    current_frame_small = cv2.resize(frame,(0,0),fx=1,fy=1)
 
-                    #---save deteksi pre muatan
-                    if((int(cls) == 1) or (int(cls) == 2)) and (arah == 1) and (chtruk0 == 1) and (skip_double0 == 0):
-                        skip_double0 = 1
-                        str_date_time = cctv_stream.get_date_time()
-                        filenameSave = "preCap_Img_" + str_date_time + "_0S.jpg"
-                        if OSWindows:
-                            filename = os.path.join(os.getcwd() + "\\images\\", "res_"+filenameSave)
-                        else:
-                            filename = os.path.join(os.getcwd() + "/images/", "res_"+filenameSave)
+    #cctv_stream.reUPLOAD_img()
+    #cctv_stream.delete_old_img()
+    cv2.line(current_frame_small, (0, YlineDetect0),(w, YlineDetect0), (0,255, 255), thickness=3)
 
-                        print(filename)
-                        img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
-                        cv2.imwrite(filename, img_resize)
+    #======
+    cctv_stream.detect_muatan(results, current_frame_small,w)
 
-                    if(int(cls) == 1) or (int(cls) == 2) and (int(cls)==0) and (arah == 1):
-                        if (int(cls) == 0):
-                            cv2.rectangle(current_frame_small, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (255,255,255), 2)
-                            cv2.putText(current_frame_small, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,0), 2)
-                        if (int(cls) == 1):
-                            cv2.rectangle(current_frame_small, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (0,255,255), 2)
-                            cv2.putText(current_frame_small, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,255), 2)
-                        if (int(cls) == 2):
-                            cv2.rectangle(current_frame_small, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (255,255,0), 2)
-                            cv2.putText(current_frame_small, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,0), 2)
 
-                        if (cy > YlineDetect1) and (int(cls) == 1) and (skip_double == 0) and (chtruk == 1):
-                            skip_double = 1
-                            sabes_count += 1
-
-                            cntFileSaveSabes +=1
-                            str_date_time = cctv_stream.get_date_time()
-
-                            filenameSave = "Img_" + str_date_time + "_1S.jpg"
-                            if OSWindows:
-                                filename = os.path.join(os.getcwd() + "\\images\\", "res_"+filenameSave)
-                            else:
-                                filename = os.path.join(os.getcwd() + "/images/", "res_"+filenameSave)
-
-                            print(filename)
-
-                            img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
-                            cv2.imwrite(filename, img_resize)
-                            cv2.imwrite("tempImg.jpg", current_frame_small)
-                            
-                            #cctv_stream.UploadIMG( filenameSave,filename, cls,'recorded')
-                            cctv_stream.UploadIMGtoPedati(filenameSave, filename, cls, 'live')
-                            #cctv_stream.UploadIMGtoPedati(filenameSave, filename, fileN[-6], 'live')
-
-                        if (cy > YlineDetect1) and (int(cls) == 2) and (skip_double == 0) and (chtruk == 1):
-                            skip_double = 1
-                            batu_count += 1
-                            cntFileSaveBatu +=1
-                            #filename = f'savedImageBatu_{cntFileSaveBatu}.jpg'
-                            str_date_time = cctv_stream.get_date_time()
-                            filenameSave = "Img_" + str_date_time + "_2B.jpg"
-                            if OSWindows:
-                                filename = os.path.join(os.getcwd() + "\\images\\", "res_"+filenameSave)
-                            else:
-                                filename = os.path.join(os.getcwd() + "/images/", "res_"+filenameSave)
-                            print(filename)
-                            print(filenameSave)
-                            
-                            img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
-                            cv2.imwrite(filename, img_resize)
-                            cv2.imwrite("tempImg.jpg", current_frame_small)
-                            #cv2.imwrite(filename, img_resize)
-
-                            #cctv_stream.UploadIMG(filenameSave,filename, cls,'recorded')
-                            cctv_stream.UploadIMGtoPedati(filenameSave, filename, cls, 'live')
-                        if (cy <= 200) and ((int(cls) == 1) or (int(cls) == 2)):
-                            skip_double = 0
-                            chtruk  = 0
-                            tempCy = 0
     #-----end main code ---
 
     cv2.imshow('frame' , current_frame_small)
