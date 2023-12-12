@@ -280,6 +280,7 @@ class App:
                     #print(isExistdelUPL)
                     if isExistdelUPL:
                         os.remove(path_imgupl + fileN)
+                        #os.remove(path_imgupl + fileN)
                         isExistdelUPL = os.path.exists(path_imgupl + fileN)
                         if isExistdelUPL:
                             print("file " + fileN + " gagal dihapus")
@@ -287,10 +288,10 @@ class App:
                             print("file " + fileN + " telah dihapus")
                                 #else:
                                     #    print("NONE")
-    def UploadIMGtoPedati(self,filenameSave, filename, muatan, source):
+    def UploadIMGtoPedati(self,filenameSave, filename,filegambarstart,filenamestart, muatan, source):
         from datetime import datetime
-        if cctv_stream.connect():
-            hostpedati = 'http://pedati.id:54100/mblb/api/main/insertcapture'
+        if self.connect():
+            hostpedati = 'http://pedati.id:54100/mblb/api/main/insertcapturedouble'
             now = datetime.now()
             print("now =", now)
             date_format = now.strftime("%Y-%m-%d %H:%M:%S")
@@ -300,11 +301,14 @@ class App:
             now = datetime.now()
             tgl_jam = now.strftime("%Y-%m-%d %H:%M:%S")
             dfile = open(filename, "rb").read()
-            files = {'filegambar': (filenameSave, dfile, 'image/jpg', {'Expires': '0'})}
+            dfile1 = open(filenamestart, "rb").read()
+            #files = {'filegambar': (filenameSave, dfile, 'image/jpg', {'Expires': '0'})}
+            files = {'filegambar': (filenameSave, dfile, 'image/jpg', {'Expires': '0'}),'filegambarstart': (filegambarstart, dfile1, 'image/jpg', {'Expires': '0'})}
 
             #data = {'id_muatan': muatan, 'pintu': str(PINTU), 'tanggal_capture': tgl_jam, 'filename': filenameSave, 'filegambar': (filenameSave, dfile, 'image/jpg', {'Expires': '0'})}
             #data = {'id_muatan': muatan, 'pintu': PINTU, 'tanggal_capture': tgl_jam, 'filename': filenameSave}
-            data = {'id_muatan': filenameSave[-6], 'pintu': PINTU, 'tanggal_capture': tgl_jam, 'filename': filenameSave, 'filegambar': filenameSave}
+            #data = {'id_muatan': filenameSave[-6], 'pintu': PINTU, 'tanggal_capture': tgl_jam, 'filename': filenameSave, 'filegambar': filenameSave}
+            data = {'id_muatan': filenameSave[-6], 'pintu': PINTU, 'tanggal_capture': tgl_jam, 'filename': filenameSave, 'filegambar': filenameSave,'filenamestart': filegambarstart, 'filegambarstart': filegambarstart}
     
             head = {'Content-Type': 'application/form-data'}
             print(data)
@@ -327,87 +331,19 @@ class App:
                         print("file upl sudah ada")
                     else:
                         newfilename = path_img + "upl_" + filenameSave
+                        newfilenamePre = path_img + "upl_" + "preCap_" + filenameSave
                         newfileloc = path_imgupl + "upl_" + filenameSave
+                        newfilelocPre = path_imgupl + "upl_" + "preCap_" + filenameSave
 
                         os.rename(filename, newfilename)
+                        os.rename(filenamestart, newfilenamePre)
                         shutil.move(newfilename,newfileloc)
+                        shutil.move( newfilenamePre,newfilelocPre)
                         print("sudah rename: ")
 
                     return True
 
-    def UploadIMG(self,filenameSave, filename, muatan, source):
-        if self.connect():
-            current_time = datetime.datetime.now()
-            tgl = str(current_time.year) + "-" + \
-                str(current_time.month) + "-" + str(current_time.day)
-            jam = str(current_time.hour) + ":" + \
-                str(current_time.minute) + ":" + str(current_time.second)
 
-            #url = 'https://produk-inovatif.com/latihan/galian/galian.php?ins=2'
-            #url = 'https://produk-inovatif.com/latihan/galian/galian.php?ins=2'
-            url = host + '/galian.php?ins=2'
-            #print (url)
-            #data = { 'tgl': '2023-10-26', 'jam': '21:31:00', 'muatan': '1', 'pintu': '4', 'filename': 'test.jpg', 'source': 'upload'}
-            data = {'tgl': tgl, 'jam': jam, 'muatan': muatan, 'pintu': str(
-                PINTU), 'filename': filenameSave, 'source': source}
-
-            head = {'Content-Type': 'application/x-www-form-urlencoded'}
-            x = requests.post(url, data=data, headers=head)
-
-            print(x.text)
-
-            #----- update data di tbtempdata
-            #url = 'https://produk-inovatif.com/latihan/galian/galian.php?muatan=2'
-            #url = 'https://produk-inovatif.com/latihan/galian/galian.php?muatan=2'
-            url = host + '/galian.php?muatan=2'
-            #print (url)
-            #data = {  'sabes': '2', 'batubelah': '0', 'pintu': '2'}
-            data = {'tgl': tgl, 'jam': jam, 'muatan': muatan, 'pintu': str(PINTU)}
-
-            head = {'Content-Type': 'application/x-www-form-urlencoded'}
-            x = requests.post(url, data=data, headers=head)
-
-            #print(x.text)
-
-            dfile = open(filename, "rb").read()
-
-            #url_img = 'https://produk-inovatif.com/latihan/galian/img_py.php'
-            #url_img = 'https://produk-inovatif.com/latihan/galian/img_py.php'
-            url_img = host + '/img_py.php'
-            #print (url_img)
-            files = {'file': (filenameSave, dfile, 'image/jpg', {'Expires': '0'})}
-            test_res = requests.post(url_img, files=files)
-            #print(test_res)
-            #print(test_res.ok)
-            if test_res.ok:
-                isExistTempImg = os.path.exists(filename)
-                #print(isExistTempImg)
-                if isExistTempImg:
-                    #img_del_date
-                    #os.remove(filename)
-                    #print("belum rename: ")
-                    #print(filename)
-                    x = filename.split("_")
-                    xxpath = x[0]
-                    panj = len(xxpath)
-                    imgUPL = xxpath[panj-3:panj]
-                    #print(xxpath[panj-3:panj])
-                    #print(imgUPL)
-                    if (imgUPL == 'upl'):
-                        print("file upl sudah ada")
-                    else:
-                        newfilename = path_img + "upl_" + filenameSave
-                        newfileloc = path_imgupl + "upl_" + filenameSave
-                        #print("=====>")
-                        #print(filename)
-                        #print(newfilename)
-                        #print(newfileloc)
-                        #print(filenameSave)
-                        os.rename(filename, newfilename)
-                        shutil.move(newfilename,newfileloc)
-                        print("sudah rename: ")
-
-                    return True
     
     def update_img_temp (self,frameTemp):
         frame3 = frameTemp
@@ -462,16 +398,18 @@ class App:
                     #---save deteksi pre muatan
                     if((int(cls) == 1) or (int(cls) == 2)) and (arah == 1) and (chtruk0 == 1) and (skip_double0 == 0):
                         skip_double0 = 1
-                        str_date_time = self.get_date_time()
-                        filenameSave = "preCap_Img_" + str_date_time + "_0S.jpg"
-                        if OSWindows:
-                            filename = os.path.join(os.getcwd() + "\\images\\", "res_"+filenameSave)
-                        else:
-                            filename = os.path.join(os.getcwd() + "/images/", "res_"+filenameSave)
+                        #str_date_time = self.get_date_time()
+                        #self.filegambarstart = "preCap_Img_" + str_date_time + ".jpg"
+                        #if OSWindows:
+                        #    self.filenamestart = os.path.join(os.getcwd() + "\\images\\", "res_"+self.filegambarstart)
+                        #else:
+                        #    self.filenamestart = os.path.join(os.getcwd() + "/images/", "res_"+self.filegambarstart)
 
-                        print(filename)
-                        img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
-                        cv2.imwrite(filename, img_resize)
+                        #print(self.filenamestart)
+                        self.img_resizePrecap = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
+                        #cv2.imwrite(self.filenamestart, img_resizePrecap)
+
+                        #self.UploadIMGtoPedati(filenameSave, filename,filegambarstart,filenamestart, cls, 'pre-capture')
 
                     #---save deteksi muatan
                     if((int(cls) == 1) or (int(cls) == 2)) and (int(cls)==0) and (arah == 1):
@@ -480,15 +418,15 @@ class App:
 
                         filenameSave = "ALL_Img_" + str_date_time + "_0S.jpg"
                         if OSWindows:
-                            filename = os.path.join(os.getcwd() + "\\images\\", "res_"+filenameSave)
+                            filename = os.path.join(os.getcwd() + "\\images\\", filenameSave)
                         else:
-                            filename = os.path.join(os.getcwd() + "/images/", "res_"+filenameSave)
+                            filename = os.path.join(os.getcwd() + "/images/", filenameSave)
 
                         print(filename)
                         img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
                         cv2.imwrite(filename, img_resize)
 
-                        self.UploadIMG(filenameSave,filename, '1','pre-capture')
+                        #self.UploadIMG(filenameSave,filename, '1','pre-capture')
                         #self.UploadIMGtoPedati(filenameSave, filename, cls, 'pre-capture')
 
 
@@ -512,21 +450,35 @@ class App:
 
                     filenameSave = "Img_" + str_date_time + "_0S.jpg"
                     if OSWindows:
-                        filename = os.path.join(os.getcwd() + "\\images\\", "res_"+filenameSave)
+                        filename = os.path.join(os.getcwd() + "\\images\\", +filenameSave)
                     else:
-                        filename = os.path.join(os.getcwd() + "/images/", "res_"+filenameSave)
+                        filename = os.path.join(os.getcwd() + "/images/", +filenameSave)
 
                     print(filename)
+
+
+                    self.filegambarstart = "preCap_" + filenameSave
+                    if OSWindows:
+                        self.filenamestart = os.path.join(os.getcwd() + "\\images\\", self.filegambarstart)
+                    else:
+                        self.filenamestart = os.path.join(os.getcwd() + "/images/", self.filegambarstart)
+
+                    print(self.filenamestart)
 
 
                     img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
                     cv2.imwrite(filename, img_resize)
                     cv2.imwrite("tempImg.jpg", current_frame_small)
+                    cv2.imwrite(self.filenamestart, self.img_resizePrecap)
 
                     #cv2.imwrite(filename, img_resize)
 
-                    self.UploadIMG( filenameSave,filename, '0','recorded')
+                    #self.UploadIMG( filenameSave,filename, '0','recorded')
                     #self.UploadIMGtoPedati(filenameSave, filename, cls, 'recorded')
+                    isExistPreImg = os.path.exists(self.filenamestart)
+                    isExistCapImg = os.path.exists(filename)
+                    if (isExistPreImg and isExistCapImg):
+                        self.UploadIMGtoPedati(filenameSave, filename,self.filegambarstart,self.filenamestart, cls, 'recorded')
 
                 if (cy > YlineDetect1) and (int(cls) == 2) and (skip_double == 0) and (chtruk == 1):
                     skip_double = 1
@@ -539,19 +491,32 @@ class App:
                     jam = str(current_time.hour) + ":" + str(current_time.minute) + ":" + str(current_time.second)
                     filenameSave = "Img_" + str(current_time.year) + "_" + str(current_time.month) + "_" + str(current_time.day) +"_" + str(current_time.hour) + "_" + str(current_time.minute) + "_" + str(current_time.second) + "_1B.jpg"
                     if OSWindows:
-                        filename = os.path.join(os.getcwd() + "\\images\\", "res_"+filenameSave)
+                        filename = os.path.join(os.getcwd() + "\\images\\", filenameSave)
                     else:
-                        filename = os.path.join(os.getcwd() + "/images/", "res_"+filenameSave)
+                        filename = os.path.join(os.getcwd() + "/images/", filenameSave)
                     print(filename)
                     print(filenameSave)
+
+                    self.filegambarstart = "preCap_" + filenameSave
+                    if OSWindows:
+                        self.filenamestart = os.path.join(os.getcwd() + "\\images\\", self.filegambarstart)
+                    else:
+                        self.filenamestart = os.path.join(os.getcwd() + "/images/", self.filegambarstart)
+
+                    print(self.filenamestart)
 
                     img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
                     cv2.imwrite(filename, img_resize)
                     cv2.imwrite("tempImg.jpg", current_frame_small)
+                    cv2.imwrite(self.filenamestart, self.img_resizePrecap)
                     #cv2.imwrite(filename, img_resize)
 
-                    self.UploadIMG(filenameSave,filename, '1','recorded')
+                    #self.UploadIMG(filenameSave,filename, '1','recorded')
                     #self.UploadIMGtoPedati(filenameSave, filename, cls, 'recorded')
+                    isExistPreImg = os.path.exists(self.filenamestart)
+                    isExistCapImg = os.path.exists(filename)
+                    if (isExistPreImg and isExistCapImg):
+                        self.UploadIMGtoPedati(filenameSave, filename,self.filegambarstart,self.filenamestart, cls, 'recorded')
                 if (cy <= (YlineDetect1-50)) and ((int(cls) == 1) or (int(cls) == 2)):
                     skip_double = 0
                     chtruk  = 0

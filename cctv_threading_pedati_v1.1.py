@@ -213,10 +213,10 @@ class CCTVStream :
                                 #else:
                                     #    print("NONE")
 
-    def UploadIMGtoPedati(self,filenameSave, filename, muatan, source):
+    def UploadIMGtoPedati(self,filenameSave, filename,filegambarstart,filenamestart, muatan, source):
         from datetime import datetime
-        if cctv_stream.connect():
-            hostpedati = 'http://pedati.id:54100/mblb/api/main/insertcapture'
+        if self.connect():
+            hostpedati = 'http://pedati.id:54100/mblb/api/main/insertcapturedouble'
             now = datetime.now()
             print("now =", now)
             date_format = now.strftime("%Y-%m-%d %H:%M:%S")
@@ -226,11 +226,14 @@ class CCTVStream :
             now = datetime.now()
             tgl_jam = now.strftime("%Y-%m-%d %H:%M:%S")
             dfile = open(filename, "rb").read()
-            files = {'filegambar': (filenameSave, dfile, 'image/jpg', {'Expires': '0'})}
+            dfile1 = open(filenamestart, "rb").read()
+            #files = {'filegambar': (filenameSave, dfile, 'image/jpg', {'Expires': '0'})}
+            files = {'filegambar': (filenameSave, dfile, 'image/jpg', {'Expires': '0'}),'filegambarstart': (filegambarstart, dfile1, 'image/jpg', {'Expires': '0'})}
 
             #data = {'id_muatan': muatan, 'pintu': str(PINTU), 'tanggal_capture': tgl_jam, 'filename': filenameSave, 'filegambar': (filenameSave, dfile, 'image/jpg', {'Expires': '0'})}
             #data = {'id_muatan': muatan, 'pintu': PINTU, 'tanggal_capture': tgl_jam, 'filename': filenameSave}
-            data = {'id_muatan': filenameSave[-6], 'pintu': PINTU, 'tanggal_capture': tgl_jam, 'filename': filenameSave, 'filegambar': filenameSave}
+            #data = {'id_muatan': filenameSave[-6], 'pintu': PINTU, 'tanggal_capture': tgl_jam, 'filename': filenameSave, 'filegambar': filenameSave}
+            data = {'id_muatan': filenameSave[-6], 'pintu': PINTU, 'tanggal_capture': tgl_jam, 'filename': filenameSave, 'filegambar': filenameSave,'filenamestart': filegambarstart, 'filegambarstart': filegambarstart}
     
             head = {'Content-Type': 'application/form-data'}
             print(data)
@@ -253,10 +256,14 @@ class CCTVStream :
                         print("file upl sudah ada")
                     else:
                         newfilename = path_img + "upl_" + filenameSave
+                        newfilenamePre = path_img + "upl_" + "preCap_" + filenameSave
                         newfileloc = path_imgupl + "upl_" + filenameSave
+                        newfilelocPre = path_imgupl + "upl_" + "preCap_" + filenameSave
 
                         os.rename(filename, newfilename)
+                        os.rename(filenamestart, newfilenamePre)
                         shutil.move(newfilename,newfileloc)
+                        shutil.move( newfilenamePre,newfilelocPre)
                         print("sudah rename: ")
 
                     return True
@@ -368,16 +375,16 @@ class CCTVStream :
                     #---save deteksi pre muatan
                     if((int(cls) == 1) or (int(cls) == 2)) and (arah == 1) and (chtruk0 == 1) and (skip_double0 == 0):
                         skip_double0 = 1
-                        str_date_time = self.get_date_time()
-                        filenameSave = "preCap_Img_" + str_date_time + "_0S.jpg"
-                        if OSWindows:
-                            filename = os.path.join(os.getcwd() + "\\images\\", "res_"+filenameSave)
-                        else:
-                            filename = os.path.join(os.getcwd() + "/images/", "res_"+filenameSave)
+                        #str_date_time = self.get_date_time()
+                        #filenameSave = "preCap_Img_" + str_date_time + "_0S.jpg"
+                        #if OSWindows:
+                        #    filename = os.path.join(os.getcwd() + "\\images\\", "res_"+filenameSave)
+                        #else:
+                        #    filename = os.path.join(os.getcwd() + "/images/", "res_"+filenameSave)
 
-                        print(filename)
-                        img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
-                        cv2.imwrite(filename, img_resize)
+                        #print(filename)
+                        self.img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
+                        #cv2.imwrite(filename, img_resize)
 
                     #---save deteksi muatan
                     if((int(cls) == 1) or (int(cls) == 2)) and (int(cls)==0) and (arah == 1):
@@ -423,16 +430,27 @@ class CCTVStream :
                         filename = os.path.join(os.getcwd() + "/images/", "res_"+filenameSave)
 
                     print(filename)
+                    self.filegambarstart = "preCap_" + filenameSave
+                    if OSWindows:
+                        self.filenamestart = os.path.join(os.getcwd() + "\\images\\", self.filegambarstart)
+                    else:
+                        self.filenamestart = os.path.join(os.getcwd() + "/images/", self.filegambarstart)
+
+                    print(self.filenamestart)
 
 
                     img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
                     cv2.imwrite(filename, img_resize)
                     cv2.imwrite("tempImg.jpg", current_frame_small)
+                    cv2.imwrite(self.filenamestart, self.img_resizePrecap)
 
                     #cv2.imwrite(filename, img_resize)
 
-                    self.UploadIMG( filenameSave,filename, '0','recorded')
-                    #self.UploadIMGtoPedati(filenameSave, filename, cls, 'recorded')
+                    #self.UploadIMG( filenameSave,filename, '0','recorded')
+                    isExistPreImg = os.path.exists(self.filenamestart)
+                    isExistCapImg = os.path.exists(filename)
+                    if (isExistPreImg and isExistCapImg):
+                        self.UploadIMGtoPedati(filenameSave, filename,self.filegambarstart,self.filenamestart, cls, 'recorded')
 
                 if (cy > YlineDetect1) and (int(cls) == 2) and (skip_double == 0) and (chtruk == 1):
                     skip_double = 1
@@ -451,13 +469,25 @@ class CCTVStream :
                     print(filename)
                     print(filenameSave)
 
+                    self.filegambarstart = "preCap_" + filenameSave
+                    if OSWindows:
+                        self.filenamestart = os.path.join(os.getcwd() + "\\images\\", self.filegambarstart)
+                    else:
+                        self.filenamestart = os.path.join(os.getcwd() + "/images/", self.filegambarstart)
+
+                    print(self.filenamestart)
+
                     img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
                     cv2.imwrite(filename, img_resize)
                     cv2.imwrite("tempImg.jpg", current_frame_small)
+                    cv2.imwrite(self.filenamestart, self.img_resizePrecap)
                     #cv2.imwrite(filename, img_resize)
 
-                    self.UploadIMG(filenameSave,filename, '1','recorded')
-                    #self.UploadIMGtoPedati(filenameSave, filename, cls, 'recorded')
+                    #self.UploadIMG(filenameSave,filename, '1','recorded')
+                    isExistPreImg = os.path.exists(self.filenamestart)
+                    isExistCapImg = os.path.exists(filename)
+                    if (isExistPreImg and isExistCapImg):
+                        self.UploadIMGtoPedati(filenameSave, filename,self.filegambarstart,self.filenamestart, cls, 'recorded')
                 if (cy <= (YlineDetect1-50)) and ((int(cls) == 1) or (int(cls) == 2)):
                     skip_double = 0
                     chtruk  = 0
