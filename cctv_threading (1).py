@@ -16,14 +16,16 @@ from os.path import exists
 import requests
 
 global skip_double,sabes_count, batu_count, cntFileSaveSabes, cntFileSaveBatu, PINTU, img_del_date, host, weight_file, OStype
-global cntdot, fps, tempCy, chtruk
-global  YlineDetect0,YlineDetect1, skip_double0
+global cntdot, fps, tempCy, chtruk, chtruk0
+global  YlineDetect0,YlineDetect1, skip_double0, arah
+arah = 0
 YlineDetect1 = 230
-YlineDetect0 = 100
+YlineDetect0 = 120
 skip_double0 = 0
 
 tempCy = 0
 chtruk = 0
+chtruk0 = 0
 fps = 0
 cntdot = 0
 skip_double = 0
@@ -305,7 +307,7 @@ class CCTVStream :
         for *xyxy, conf, cls in results.xyxy[0]:
             cx, cy = (int(xyxy[0]+(xyxy[2]-xyxy[0])/2),
                   int(xyxy[1]+(xyxy[3]-xyxy[1])/2))
-            print("cy: " + str(cy) + "   cyTemp: " + str(tempCy))
+            print("cy: " + str(cy) + "   cyTemp: " + str(tempCy) + "   chtruk0: " + str(chtruk0))
 
             
             label = f'{model.names[int(cls)]} {conf:.2f} {cls}'
@@ -331,7 +333,13 @@ class CCTVStream :
                     if (cy > (YlineDetect1-100)) and (int(cls) == 0) and (skip_double == 0):
                         chtruk  = 1
                     #---save deteksi pre muatan
-                    if((int(cls) == 1) or (int(cls) == 2)) and (arah == 1) and (chtruk0 == 1) and (skip_double0 == 0)  and  (cy > YlineDetect0):
+                    print((int(cls) == 1) or (int(cls) == 2))
+                    print("arah: " +str(arah))
+                    print("chtruk: " +str(chtruk))
+                    print("skip_double0: " +str(skip_double0))
+                    print(str(cy) + " - " + str(YlineDetect0))
+                    print(((int(cls) == 1) or (int(cls) == 2)) and (arah == 1) and (chtruk == 1) and (skip_double0 == 0)  and  (cy > YlineDetect0))
+                    if((int(cls) == 1) or (int(cls) == 2)) and (arah == 1) and (chtruk == 1) and (skip_double0 == 0)  and  (cy > YlineDetect0):
                         skip_double0 = 1
                         #str_date_time = self.get_date_time()
                         #filenameSave = "preCap_Img_" + str_date_time + "_0S.jpg"
@@ -401,14 +409,15 @@ class CCTVStream :
                     img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
                     cv2.imwrite(filename, img_resize)
                     cv2.imwrite("tempImg.jpg", current_frame_small)
-                    #cv2.imwrite(self.filenamestart, self.img_resizePrecap)
+                    print("sabes capture...")
+                    
                     isExistPreImg = os.path.exists(os.path.join(os.getcwd() + "/", "preCapTemp.jpg"))
                     if isExistPreImg:
                         os.rename("preCapTemp.jpg", self.filenamestart)
 
-                    #cv2.imwrite(filename, img_resize)
+                    
 
-                    #self.UploadIMG( filenameSave,filename, '0','recorded')
+                    
                     isExistPreImg = os.path.exists(self.filenamestart)
                     isExistCapImg = os.path.exists(filename)
                     if (isExistPreImg and isExistCapImg):
@@ -442,13 +451,13 @@ class CCTVStream :
                     img_resize = cv2.resize(current_frame_small,(0,0),fx=0.5,fy=0.5)
                     cv2.imwrite(filename, img_resize)
                     cv2.imwrite("tempImg.jpg", current_frame_small)
-                    #cv2.imwrite(self.filenamestart, self.img_resizePrecap)
+                    print("batu belah capture...")
                     isExistPreImg = os.path.exists(os.path.join(os.getcwd() + "/", "preCapTemp.jpg"))
                     if isExistPreImg:
                         os.rename("preCapTemp.jpg", self.filenamestart)
-                    #cv2.imwrite(filename, img_resize)
+                    
 
-                    #self.UploadIMG(filenameSave,filename, '1','recorded')
+                    
                     isExistPreImg = os.path.exists(self.filenamestart)
                     isExistCapImg = os.path.exists(filename)
                     if (isExistPreImg and isExistCapImg):
