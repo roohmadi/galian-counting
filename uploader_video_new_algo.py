@@ -59,7 +59,7 @@ from datetime import date
 global  YlineDetect0,YlineDetect1, Y0, Y1, cyTruk
 YlineDetect1 = 350
 YlineDetect0 = 200
-Y0 = 40
+Y0 = 50
 Y1 = 200
 cyTruk = 0
 
@@ -79,8 +79,9 @@ production = False
 global skip_double,sabes_count, batu_count, cntFileSaveSabes, cntFileSaveBatu, PINTU, img_del_date, host, weight_file, OStype
 global cntdot, tempCy, chtruk, skip_double0, chtruk0
 global cntOBJ, arah
-global captureOK
+global captureOK, cyDetect
 captureOK = 0
+cyDetect = 0
 cntOBJ = 0
 chtruk0 = 0
 chtruk = 0
@@ -701,8 +702,23 @@ class App:
 
         self.lmain1.imgtk = imgtk2
         self.lmain1.configure(image=imgtk2)
+        
+    def save_img (self,img_ori):
+        #str_date_time = 
+        filenameSave = "Img_" + self.get_date_time() + "_0S.jpg"
+        if OSWindows:
+            filename = os.path.join(os.getcwd() + "\\images\\", filenameSave)
+        else:
+            filename = os.path.join(os.getcwd() + "/images/", filenameSave)
+        cv2.imwrite(filename, img_ori)
 
-    def detect_muatan(self, results, current_frame_small,img_ori,w):
+        print("Capture...")
+        print("")
+        print("")
+        print("")
+        
+
+    def detect_muatan1(self, results, current_frame_small,img_ori,w):
         global skip_double,sabes_count, batu_count, cntFileSaveBatu, cntFileSaveSabes, cntFlag
         global chtruk, tempCy, arah,cyTruk
         global skip_double0, chtruk0
@@ -729,6 +745,11 @@ class App:
                 elif (cy > tempCy):
                     tempCy = cyTruk
                     arah = 1
+                
+                #YlineDetect1 = 350
+                #YlineDetect0 = 150
+                #Y0 = 50
+                #Y1 = 200
 
 
                 if (cyTruk > Y0)  and (int(cls) == 0) and (skip_double == 0):
@@ -738,7 +759,8 @@ class App:
                     captureOK = 1
                 if (chtruk == 1) and (arah == 1) and (skip_double == 1):
                     captureOK = 0
-                if (cyTruk <= (Y0+20)) and ((int(cls) == 1) or (int(cls) == 2)):
+                #if (cyTruk <= (Y0+20)) and ((int(cls) == 1) or (int(cls) == 2)):
+                if (cyTruk > 0) and ((int(cls) == 1) or (int(cls) == 2)):
                     skip_double = 0
                     chtruk  = 0
                     tempCy = 0
@@ -754,38 +776,108 @@ class App:
                     cv2.putText(img_ori, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2)
                     cv2.line(current_frame_small, (0, cy),(w, cy), (0,0,255), thickness=3)
 
-                    str_date_time = self.get_date_time()
-                    filenameSave = "Img_" + str_date_time + "_0S.jpg"
-                    if OSWindows:
-                        filename = os.path.join(os.getcwd() + "\\images\\", filenameSave)
-                    else:
-                        filename = os.path.join(os.getcwd() + "/images/", filenameSave)
-                    cv2.imwrite(filename, img_ori)
+                    self.save_img(img_ori)                    
 
-                    print("Capture...")
-
-                if (cyTruk > Y0) and (int(cls) == 2) and (skip_double == 0) and (chtruk == 1):
+                if (cyTruk > (Y0)) and (int(cls) == 2) and (skip_double == 0) and (chtruk == 1):
                     skip_double = 1
                     cv2.rectangle(img_ori, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (0,255,0), 2)
                     cv2.putText(img_ori, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2)
                     cv2.line(img_ori, (0, cy),(w, cy), (0,255, 0), thickness=3)
 
-                    str_date_time = self.get_date_time()
-                    filenameSave = "Img_" + str_date_time + "_0S.jpg"
-                    if OSWindows:
-                        filename = os.path.join(os.getcwd() + "\\images\\", filenameSave)
-                    else:
-                        filename = os.path.join(os.getcwd() + "/images/", filenameSave)
-                    cv2.imwrite(filename, img_ori)
+                    self.save_img(img_ori)  
 
-                    print("Capture...")
-
-
+            cv2.putText(img_ori, "cy " + str(cy) + " Y: " + str(YlineDetect0-20),(450,cy),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
 
 #-----
         #print("cntOBJ: " +str(cntOBJ))
+        cv2.putText(img_ori, "cyTruk " + str(cyTruk),(50,cyTruk),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
+        
+        cv2.line(img_ori, (0, YlineDetect0-20),(w, YlineDetect0-20), (255,255, 0), thickness=3)
         print("cy: " + str(cyTruk) + " Y1: "+ str(Y1)+"   cyTemp: " + str(tempCy) + " arah: " +str(arah) + " chtruk: " +str(chtruk) + " cap: " +str(captureOK) + " skp: " + str(skip_double))
-        cv2.putText(img_ori, "PINTU " + str(PINTU),(50,100),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
+        #cv2.putText(img_ori, "PINTU " + str(PINTU),(50,100),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
+        cv2image2 = cv2.cvtColor(img_ori, cv2.COLOR_BGR2RGBA)
+
+        #cv2.imshow("cropped", crop_img)
+        #img2 = Image.fromarray(crop_img)
+        img2 = Image.fromarray(cv2image2)
+        imgtk2 = ImageTk.PhotoImage(image=img2)
+
+        self.lmain1.imgtk = imgtk2
+        self.lmain1.configure(image=imgtk2)
+        time.sleep(0.05)
+    
+    def detect_muatan(self, results, current_frame_small,img_ori,w):
+        global skip_double,sabes_count, batu_count, cntFileSaveBatu, cntFileSaveSabes, cntFlag
+        global chtruk, tempCy, arah,cyTruk
+        global skip_double0, chtruk0
+        global captureOK,cyDetect
+        #print("detect muatan")
+        cntOBJ = 0
+        
+        for *xyxy, conf, cls in results.xyxy[0]:
+            cx, cy = (int(xyxy[0]+(xyxy[2]-xyxy[0])/2),
+                  int(xyxy[1]+(xyxy[3]-xyxy[1])/2))
+            print("cy: " + str(cy) + "   cyTemp: " + str(tempCy) + "   chtruk0: " + str(chtruk0))
+
+            
+            label = f'{model.names[int(cls)]} {conf:.2f} {cls}'
+            print(label)
+            if conf>0.5:
+                #label = f'{model.names[int(cls)]} {conf:.2f}'
+                label = f'{model.names[int(cls)]}'
+                #YlineDetect1 = 350
+                #YlineDetect0 = 150
+                #YlineDetect1 = 350
+                #YlineDetect0 = 200
+                #Y0 = 50
+                #Y1 = 200
+                if (cy > YlineDetect0):
+                    cyDetect = cy-YlineDetect0
+                if (cy > YlineDetect1+10):
+                    cyDetect = 0
+                if (cy < YlineDetect0) and (arah == 1):
+                    skip_double = 0
+                if (cy < tempCy):
+                    arah = 0
+                    tempCy = cy
+                elif (cy > tempCy) and (chtruk == 1):
+                    tempCy = cy
+                    arah = 1
+                #--- chek jika ada truk lewat
+                if (cy > (YlineDetect0-100)) and (int(cls) == 0) and (skip_double0 == 0):
+                    chtruk  = 1
+                
+                
+                if (cy > YlineDetect0) and (int(cls) == 1) and (skip_double == 0) and (arah == 1):
+                    skip_double = 1
+                    sabes_count += 1
+                    
+                    self.save_img(img_ori)  
+                    print("Capture...")
+                    print("")
+                    print("")
+                    print("")
+                
+                if (cy > YlineDetect0) and (int(cls) == 2) and (skip_double == 0) and (arah == 1):
+                    skip_double = 1
+                    batu_count += 1
+                    
+                    self.save_img(img_ori)  
+                    print("Capture...")
+                    print("")
+                    print("")
+                    print("")
+                
+                #if (cyDetect > 210) and ((int(cls) == 1) or (int(cls) == 2)):
+                #    skip_double = 0
+                #    chtruk  = 0
+                #    tempCy = 0
+                    
+            if(int(cls) == 0):
+                cv2.putText(img_ori,"cyD: " +str(cyDetect)+" cy " + str(cy) + " skp: " + str(skip_double),(350,cy),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
+            
+            print("cy: " + str(cy) + " Y1: "+ str(Y1)+"   cyD: " + str(cyDetect) + " arah: " +str(arah) + " chtruk: " +str(chtruk) + " cap: " +str(captureOK) + " skp: " + str(skip_double))
+        #cv2.putText(img_ori, "PINTU " + str(PINTU),(50,100),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
         cv2image2 = cv2.cvtColor(img_ori, cv2.COLOR_BGR2RGBA)
 
         #cv2.imshow("cropped", crop_img)
@@ -832,15 +924,15 @@ class App:
                         cntdot = 0
                     if (cntdot % 5) == 0  :
                         crop_img = current_frame_small[YlineDetect0:YlineDetect0+250, 0:w]
-                        results = model(crop_img)
+                        results = model(current_frame_small)
                         
 
                         self.lbl_val['text'] = ": None"
                         
                         #self.reUPLOAD_img()
                         #self.delete_old_img()
-                        cv2.line(crop_img, (0, Y0),(w, Y0), (0,255, 255), thickness=3)
-                        cv2.line(crop_img, (0, Y1),(w, Y1), (0,255, 255), thickness=3)
+                        cv2.line(current_frame_small, (0, YlineDetect0),(w, YlineDetect0), (0,255, 255), thickness=3)
+                        cv2.line(current_frame_small, (0, YlineDetect1),(w, YlineDetect1), (0,255, 255), thickness=3)
 
                         #======
 
