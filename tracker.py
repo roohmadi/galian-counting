@@ -156,6 +156,7 @@ def detect(opt):
                 s += f'{i}: '
             else:
                 p, im0, _ = path, im0s.copy(), getattr(dataset, 'frame', 0)
+                im0 = cv2.resize(im0,(0,0),fx=2,fy=2)
 
             p = Path(p) 
             save_path = str(save_dir / p.name)  # im.jpg, vid.mp4, ...
