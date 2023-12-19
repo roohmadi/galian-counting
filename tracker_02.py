@@ -284,7 +284,9 @@ def detect(opt):
 
                 im0 = cv2.resize(im0, (1000,700))
                 try :
-                    #cv2.imshow('iKurious Traffic Management', im0)
+                    cv2.imshow('iKurious Traffic Management', im0)
+                    print(save_path)
+                    cv2.imwrite(save_path, im0)
                     if cv2.waitKey(1) % 256 == 27:  # ESC code 
                         raise StopIteration  
                 except KeyboardInterrupt:
@@ -409,7 +411,7 @@ def direction(id,y):
 if __name__ == '__main__':
     __author__ = 'Mahimai Raja J'
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str, default='yolov5s.pt', help='model.pt path(s)')
+    parser.add_argument('--weights', nargs='+', type=str, default='galian_200epch_1k5.pt', help='model.pt path(s)')
     parser.add_argument('--deep_sort_model', type=str, default='osnet_x0_25')
     parser.add_argument('--source', type=str, default='input.mp4', help='source')  # file/folder, 0 for webcam
     parser.add_argument('--output', type=str, default='inference/output', help='output folder')  # output folder
