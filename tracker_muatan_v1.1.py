@@ -394,15 +394,15 @@ def reUPLOAD_img():
     cek_img_off = len(imgOFF)
     #print(cek_img_off)
     if cek_img_off > 0:
-        filename = imgOFF[0]
-        filenamestart = "preCap_"+filename
+        filenameSave = imgOFF[0]
+        filegambarstart = "preCap_"+filenameSave
 
         #print(fileN)
         #print(os.path.join(os.getcwd() + "\\images\\", fileN))
         #print(fileN[-6])
         if OSWindows:
-            filenameSave = path_img + "\\" + filename
-            filegambarstart = path_img + "\\" + filenamestart
+            filename = path_img + "\\" + filenameSave
+            filenamestart = path_img + "\\" + filegambarstart
             if UploadIMGtoPedatiDouble(filenameSave, filename,filegambarstart, filenamestart, filename[-6], 'live'):
             #if UploadIMGtoPedatiDouble(fileN,os.path.join(os.getcwd() + "\\images\\", fileN),fileN[-6],'re-upload'):
                 print("Upload offline suksess...")
