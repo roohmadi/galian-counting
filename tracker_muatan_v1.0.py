@@ -320,6 +320,7 @@ def detect(opt):
                     thickness = 2 # font thickness
                     font = cv2.FONT_HERSHEY_SIMPLEX
                     fontScale = 0.5
+                    cv2.putText(im0, "PINTU " + str(PINTU),(50,120),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
                     #cv2.putText(im0, "Outgoing Traffic:  "+str(up_count), (60, 150), font,
                     #            fontScale, (0,0,255), thickness, cv2.LINE_AA)
 
