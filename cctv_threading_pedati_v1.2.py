@@ -606,7 +606,7 @@ class CCTVStream :
 
         print("cy: " + str(cyTruk) + " Y1: "+ str(Y1)+"   cyTemp: " + str(tempCy) + " arah: " +str(arah) + " chtruk: " +str(chtruk) + " cap: " +str(captureOK) + " skp: " + str(skip_double))
 
-        cv2.putText(img_ori,  "PINTU " + str(PINTU),(380,40),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
+        cv2.putText(img_ori,  "PINTU " + str(PINTU),(((w//2)-50),40),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
         #cv2image2 = cv2.cvtColor(img_ori, cv2.COLOR_BGR2RGBA)
 
 
@@ -632,11 +632,11 @@ while True :
     num_frames_processed += 1
     
     #frame = imutils.resize(frame, width=800)
-    frame = cv2.resize(frame,(0,0),fx=1,fy=1)
+    #frame = cv2.resize(frame,(0,0),fx=1,fy=1)
     
     #-----main code --
     w, h = frame.shape[1],frame.shape[0]
-    current_frame_small = cv2.resize(frame,(0,0),fx=1.5,fy=1.5)
+    current_frame_small = cv2.resize(frame,(0,0),fx=1,fy=1)
     
     
     if cntdot > 20:
