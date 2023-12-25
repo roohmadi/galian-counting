@@ -189,7 +189,7 @@ class CCTVStream :
                     print("Upload offline suksess...")
             else:
                 #if UploadIMGtoPedatiDouble(fileN,os.path.join(os.getcwd() + "/images/", fileN),fileN[-6],'re-upload'):
-                filenameSave = path_img + "/" + filename
+                filenameSave = path_img + "/" + filenameSave
                 filegambarstart = path_img + "/" + filenamestart
                 if cctv_stream.UploadIMGtoPedatiDouble(filenameSave, filename,filegambarstart, filenamestart, filename[-6], 'live'):
                     print("Upload offline suksess...")
