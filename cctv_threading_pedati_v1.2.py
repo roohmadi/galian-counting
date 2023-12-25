@@ -169,21 +169,29 @@ class CCTVStream :
             return False
         
     def reUPLOAD_img(self):
-        #print(path_img)
+        print(path_img)
 
         imgOFF = os.listdir(path_img)
         cek_img_off = len(imgOFF)
         #print(cek_img_off)
         if cek_img_off > 0:
-            fileN = imgOFF[0]
+            filenameSave = imgOFF[0]
+            filegambarstart = "preCap_"+filenameSave
+
             #print(fileN)
             #print(os.path.join(os.getcwd() + "\\images\\", fileN))
             #print(fileN[-6])
             if OSWindows:
-                if cctv_stream.UploadIMGtoPedati(fileN,os.path.join(os.getcwd() + "\\images\\", fileN),fileN[-6],'re-upload'):
+                filename = path_img + "\\" + filenameSave
+                filenamestart = path_img + "\\" + filegambarstart
+                if cctv_stream.UploadIMGtoPedatiDouble(filenameSave, filename,filegambarstart, filenamestart, filename[-6], 'live'):
+                #if UploadIMGtoPedatiDouble(fileN,os.path.join(os.getcwd() + "\\images\\", fileN),fileN[-6],'re-upload'):
                     print("Upload offline suksess...")
             else:
-                if cctv_stream.UploadIMGtoPedati(fileN,os.path.join(os.getcwd() + "/images/", fileN),fileN[-6],'re-upload'):
+                #if UploadIMGtoPedatiDouble(fileN,os.path.join(os.getcwd() + "/images/", fileN),fileN[-6],'re-upload'):
+                filenameSave = path_img + "/" + filename
+                filegambarstart = path_img + "/" + filenamestart
+                if cctv_stream.UploadIMGtoPedatiDouble(filenameSave, filename,filegambarstart, filenamestart, filename[-6], 'live'):
                     print("Upload offline suksess...")
 
     def delete_old_img(self):
@@ -209,11 +217,15 @@ class CCTVStream :
 
 
                 if get_diff_days > img_del_date:
+                    filePre = fileN[:4] + "preCap_" + fileN[4:]
                     #print(path_img + fileN)
                     isExistdelUPL = os.path.exists(path_imgupl + fileN)
+                    isExistdelPre = os.path.exists(path_imgupl + filePre)
                     #print(isExistdelUPL)
                     if isExistdelUPL:
                         os.remove(path_imgupl +"/"+ fileN)
+                        if isExistdelPre:
+                            os.remove(path_imgupl +"/"+ filePre)
                         isExistdelUPL = os.path.exists(path_imgupl + fileN)
                         if isExistdelUPL:
                             print("file " + fileN + " gagal dihapus")
@@ -221,6 +233,62 @@ class CCTVStream :
                             print("file " + fileN + " telah dihapus")
                                 #else:
                                     #    print("NONE")
+
+    def UploadIMGtoPedatiDouble(self,filenameSave, filename,filegambarstart,filenamestart, muatan, source):
+        from datetime import datetime
+        if cctv_stream.connect():
+            hostpedati = 'http://pedati.id:54100/mblb/api/main/insertcapturedouble'
+            #hostpedati = 'http://pedati.id:54100/mblb/api/main/insertcapture'
+            now = datetime.now()
+            print("now =", now)
+            date_format = now.strftime("%Y-%m-%d %H:%M:%S")
+
+            #date_obj = datetime.strptime(date_str, date_format)
+            print(date_format)
+            now = datetime.now()
+            tgl_jam = now.strftime("%Y-%m-%d %H:%M:%S")
+            dfile = open(filename, "rb").read()
+            dfile1 = open(filenamestart, "rb").read()
+            #files = {'filegambar': (filenameSave, dfile, 'image/jpg', {'Expires': '0'})}
+            files = {'filegambar': (filenameSave, dfile, 'image/jpg', {'Expires': '0'}),'filegambarstart': (filegambarstart, dfile1, 'image/jpg', {'Expires': '0'})}
+
+            #data = {'id_muatan': muatan, 'pintu': str(PINTU), 'tanggal_capture': tgl_jam, 'filename': filenameSave, 'filegambar': (filenameSave, dfile, 'image/jpg', {'Expires': '0'})}
+            #data = {'id_muatan': muatan, 'pintu': PINTU, 'tanggal_capture': tgl_jam, 'filename': filenameSave}
+            #data = {'id_muatan': filenameSave[-6], 'pintu': PINTU, 'tanggal_capture': tgl_jam, 'filename': filenameSave, 'filegambar': filenameSave}
+            data = {'id_muatan': filenameSave[-6], 'pintu': PINTU, 'tanggal_capture': tgl_jam, 'filename': filenameSave, 'filegambar': filenameSave,'filenamestart': filegambarstart, 'filegambarstart': filegambarstart}
+
+            head = {'Content-Type': 'application/form-data'}
+            print(data)
+
+            test_res = requests.post(hostpedati, data=data,files=files)
+            #test_res = requests.post(hostpedati, data=data, files=files)
+            #test_res = requests.post(host, data=data)
+            print(test_res)
+            print(test_res.text)
+            if test_res.ok:
+                isExistTempImg = os.path.exists(filename)
+                if isExistTempImg:
+                    x = filename.split("_")
+                    xxpath = x[0]
+                    panj = len(xxpath)
+                    imgUPL = xxpath[panj-3:panj]
+                    #print(xxpath[panj-3:panj])
+                    #print(imgUPL)
+                    if (imgUPL == 'upl'):
+                        print("file upl sudah ada")
+                    else:
+                        newfilename = path_img + "upl_" + filenameSave
+                        newfilenamePre = path_img + "upl_" + "preCap_" + filenameSave
+                        newfileloc = path_imgupl + "upl_" + filenameSave
+                        newfilelocPre = path_imgupl + "upl_" + "preCap_" + filenameSave
+
+                        os.rename(filename, newfilename)
+                        os.rename(filenamestart, newfilenamePre)
+                        shutil.move(newfilename,newfileloc)
+                        shutil.move( newfilenamePre,newfilelocPre)
+                        print("sudah rename: ")
+
+                    return True
 
     def UploadIMGtoPedati(self,filenameSave, filename,filegambarstart,filenamestart, muatan, source):
         from datetime import datetime
@@ -601,7 +669,7 @@ class CCTVStream :
                     chtruk  = 0
                     tempCy = 0
 
-                cv2.putText(img_ori, "cls " + str(cls) + " - " + str(cy),(50,cy),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
+                #cv2.putText(img_ori, "cls " + str(cls) + " - " + str(cy),(50,cy),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
 
 
         print("cy: " + str(cyTruk) + " Y1: "+ str(Y1)+"   cyTemp: " + str(tempCy) + " arah: " +str(arah) + " chtruk: " +str(chtruk) + " cap: " +str(captureOK) + " skp: " + str(skip_double))
@@ -635,8 +703,9 @@ while True :
     #frame = cv2.resize(frame,(0,0),fx=1,fy=1)
     
     #-----main code --
-    w, h = frame.shape[1],frame.shape[0]
-    current_frame_small = cv2.resize(frame,(0,0),fx=1,fy=1)
+
+    current_frame_small = cv2.resize(frame,(0,0),fx=1.3,fy=1.3)
+    w, h = current_frame_small.shape[1],current_frame_small.shape[0]
     
     
     if cntdot > 20:
@@ -647,11 +716,11 @@ while True :
 
     #current_frame_small = cv2.resize(frame,(0,0),fx=1,fy=1)
 
-    #cctv_stream.reUPLOAD_img()
-    #cctv_stream.delete_old_img()
+    cctv_stream.reUPLOAD_img()
+    cctv_stream.delete_old_img()
     #cv2.line(current_frame_small, (0, YlineDetect0),(w, YlineDetect0), (0,255, 255), thickness=3)
-    #cv2.line(crop_img, (0, Y0),(w, Y0), (0,255, 255), thickness=3)
-    #cv2.line(crop_img, (0, Y1),(w, Y1), (0,255, 255), thickness=3)
+    cv2.line(crop_img, (0, Y0),(w, Y0), (0,255, 255), thickness=3)
+    cv2.line(crop_img, (0, Y1),(w, Y1), (0,255, 255), thickness=3)
 
     #======
     #           detect_muatan(results, crop_img,current_frame_small,w,h)
