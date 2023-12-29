@@ -289,6 +289,10 @@ class CCTVStream :
                             newfilenamePre = path_img + "upl_" +  filenamestart
                             newfileloc = path_imgupl + "upl_" + filenameSave
                             newfilelocPre = path_imgupl + "upl_" +  filenamestart
+                            print(newfilename)
+                            print(newfilenamePre)
+                            print(newfileloc)
+                            print(newfilelocPre)
 
                             os.rename(filename, newfilename)
                             os.rename(filenamestart, newfilenamePre)
