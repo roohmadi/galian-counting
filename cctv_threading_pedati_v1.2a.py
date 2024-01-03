@@ -205,15 +205,12 @@ class CCTVStream :
             if (cek_img_del > 0) and (imgUPL == 'upl'):
                 today = datetime.date.today()
                 year = today.year
-                if (x[2] == str(year)):
+                if (x[1] == 'Img'):
                     date_create = date(int(x[2]),int(x[3]),int(x[4]))
                     get_diff_days = (date.today() - date_create).days
-                elif (x[3] == str(year)):
+                if (x[1] == 'preCap') : 
                     date_create = date(int(x[3]),int(x[4]),int(x[5]))
-                    get_diff_days = (date.today() - date_create).days
-                elif (x[4] == str(year)):
-                    date_create = date(int(x[4]),int(x[5]),int(x[6]))
-                    get_diff_days = (date.today() - date_create).days
+                    get_diff_days = (date.today() - date_create).days               
 
 
                 if get_diff_days > img_del_date:
