@@ -170,66 +170,48 @@ class CCTVStream :
         
     def reUPLOAD_img(self):
         print(path_img)
-
-        imgOFF = os.listdir(path_img)
-        cek_img_off = len(imgOFF)
-        #print(cek_img_off)
-        if cek_img_off > 0:
-            filenameSave = imgOFF[0]
-            filegambarstart = "preCap_"+filenameSave
+        for fileN in os.listdir(path_img):
+            x = fileN.split("_")
+            if (x[0] == 'Img'):
+    
+                filenameSave = fileN
+                filegambarstart = "preCap_"+filenameSave
 
             #print(fileN)
             #print(os.path.join(os.getcwd() + "\\images\\", fileN))
             #print(fileN[-6])
-            if OSWindows:
-                filename = path_img + "\\" + filenameSave
-                filenamestart = path_img + "\\" + filegambarstart
-                if cctv_stream.UploadIMGtoPedatiDouble(filenameSave, filename,filegambarstart, filenamestart, filename[-6], 'live'):
+                if OSWindows:
+                    filename = path_img + "\\" + filenameSave
+                    filenamestart = path_img + "\\" + filegambarstart
+                    if cctv_stream.UploadIMGtoPedatiDouble(filenameSave, filename,filegambarstart, filenamestart, filename[-6], 'live'):
                 #if UploadIMGtoPedatiDouble(fileN,os.path.join(os.getcwd() + "\\images\\", fileN),fileN[-6],'re-upload'):
-                    print("Upload offline suksess...")
-            else:
+                        print("Upload offline suksess...")
+                else:
                 #if UploadIMGtoPedatiDouble(fileN,os.path.join(os.getcwd() + "/images/", fileN),fileN[-6],'re-upload'):
-                filename = path_img + filenameSave
-                filenamestart = path_img  + filegambarstart
-                if cctv_stream.UploadIMGtoPedatiDouble(filenameSave, filename,filegambarstart, filenamestart, filename[-6], 'live'):
-                    print("Upload offline suksess...")
+                    filename = path_img + filenameSave
+                    filenamestart = path_img  + filegambarstart
+                    if cctv_stream.UploadIMGtoPedatiDouble(filenameSave, filename,filegambarstart, filenamestart, filename[-6], 'live'):
+                        print("Upload offline suksess...")
 
-    def delete_old_img(self):
-        for fileN in os.listdir(path_imgupl):
-            x = fileN.split("_")
-            #print(x)
-            imgUPL = x[0]
-            #print(imgUPL)
-            cek_img_del = len(imgUPL)
-            #print(cek_img_del)
-            if (cek_img_del > 0) and (imgUPL == 'upl'):
-                today = datetime.date.today()
-                year = today.year
-                if (x[1] == 'Img'):
-                    date_create = date(int(x[2]),int(x[3]),int(x[4]))
-                    get_diff_days = (date.today() - date_create).days
-                if (x[1] == 'preCap') : 
-                    date_create = date(int(x[3]),int(x[4]),int(x[5]))
-                    get_diff_days = (date.today() - date_create).days               
+    def UploadIMGtoPedatiDouble11(self,filenameSave, filename,filegambarstart,filenamestart, muatan, source):
+       from datetime import datetime
+       if cctv_stream.connect():
+           hostpedati = 'http://pedati.id:54100/mblb/api/main/insertcapturedouble'
+           #hostpedati = 'http://pedati.id:54100/mblb/api/main/insertcapture'
+           now = datetime.now()
+           print("now =", now)
+           date_format = now.strftime("%Y-%m-%d %H:%M:%S")
 
-
-                if get_diff_days > img_del_date:
-                    filePre = fileN[:4] + "preCap_" + fileN[4:]
-                    #print(path_img + fileN)
-                    isExistdelUPL = os.path.exists(path_imgupl + fileN)
-                    isExistdelPre = os.path.exists(path_imgupl + filePre)
-                    #print(isExistdelUPL)
-                    if isExistdelUPL:
-                        os.remove(path_imgupl +"/"+ fileN)
-                        if isExistdelPre:
-                            os.remove(path_imgupl +"/"+ filePre)
-                        isExistdelUPL = os.path.exists(path_imgupl + fileN)
-                        if isExistdelUPL:
-                            print("file " + fileN + " gagal dihapus")
-                        else:
-                            print("file " + fileN + " telah dihapus")
-                                #else:
-                                    #    print("NONE")
+           #date_obj = datetime.strptime(date_str, date_format)
+           print(date_format)
+           now = datetime.now()
+           tgl_jam = now.strftime("%Y-%m-%d %H:%M:%S")
+           print(filename)
+           print(filenamestart)
+           isExistTempImg = os.path.exists(filename)
+           isExistPre = os.path.exists(filenamestart)
+           print(isExistTempImg)
+           print(isExistPre)
 
     def UploadIMGtoPedatiDouble(self,filenameSave, filename,filegambarstart,filenamestart, muatan, source):
         from datetime import datetime
@@ -248,6 +230,9 @@ class CCTVStream :
             print(filenamestart)
             isExistTempImg = os.path.exists(filename)
             isExistPre = os.path.exists(filenamestart)
+            print(isExistTempImg)
+            print(isExistPre)
+            
             
             if isExistTempImg:
                 dfile = open(filename, "rb").read()
@@ -283,9 +268,9 @@ class CCTVStream :
                             print("file upl sudah ada")
                         else:
                             newfilename = path_img + "upl_" + filenameSave
-                            newfilenamePre = path_img + "upl_" +  filenamestart
-                            newfileloc = path_imgupl + "upl_" + filenameSave
-                            newfilelocPre = path_imgupl + "upl_" +  filenamestart
+                            newfilenamePre = path_img + "upl_" +  filegambarstart
+                            newfileloc = path_imgupl + "/upl_" + filenameSave
+                            newfilelocPre = path_imgupl + "/upl_" +  filegambarstart
                             print(newfilename)
                             print(newfilenamePre)
                             print(newfileloc)
