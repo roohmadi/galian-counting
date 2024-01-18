@@ -24,9 +24,12 @@ global cntdot, tempCy, chtruk, skip_double0, chtruk0
 global cntOBJ, arah
 global captureOK, diff
 global  YlineDetect0,YlineDetect1, Y0, Y1, cyTruk
-YlineDetect1 = 420
-YlineDetect0 = 170
-Y0 = 40
+global time_pro,jam
+jam = 0
+time_pro = 0
+YlineDetect1 = 450
+YlineDetect0 = 130 #170
+Y0 = 20 #40
 Y1 = 200
 cyTruk = 0
 diff = 0
@@ -53,7 +56,7 @@ saveTempImgFlag = False
 
 production = False
 
-fileLog = 'log_in.ini'
+
 
 from configparser import ConfigParser
 config = ConfigParser()
@@ -81,22 +84,34 @@ else:
     print("OS Linux/Debian")
 #host = 'https://produk-inovatif.com/galiantes'
 print("host: " + host)
+current_time = datetime.datetime.now()        
+str_tgl = str(current_time.year) + "_" + str(current_time.month) + "_" + str(current_time.day)
 if OSWindows:
     #--Windows
     path_img = os.getcwd()+"\\images\\"
     path_imgTemp = os.getcwd()+"\\tempImg.jpg"
     path_imgTempDetect = os.getcwd()+'\\'+"tempImgDetect.jpg"
     path_imgupl = os.getcwd()+"\\imgupl\\"
+    path_log = os.getcwd()+"\\log\\"
 else:
     #--Linux
     path_img = os.getcwd()+"/images/"
     path_imgTemp = os.getcwd()+"/tempImg.jpg"
     path_imgTempDetect = os.getcwd()+'/'+"tempImgDetect.jpg"
     path_imgupl = os.getcwd()+"/imgupl/"
+    path_log = os.getcwd()+"/log/"
 
+fileLog = path_log + str_tgl + '.log'
 print('--------=---------')
 print("image saved to " + path_img)
 print("cctv: " + val_rtsp)
+
+isExistlog = os.path.exists(path_log)
+if isExistlog:
+    print("folder upl exist")
+else:
+    print("folder upl not exist")
+    os.mkdir(path_log)
 isExistupl = os.path.exists(path_imgupl)
 if isExistupl:
     print("folder upl exist")
@@ -120,11 +135,45 @@ class CCTVStream :
     global fps, skip_double,sabes_count, batu_count, cntFileSaveBatu, cntFileSaveSabes, cntFlag,cntdot
     global chtruk, tempCy, arah
 
+    def date_filename (self):
+        current_time = datetime.datetime.now()        
+        str_tgl = str(current_time.year) + "_" + str(current_time.month) + "_" + str(current_time.day)
+        return str(str_tgl)
+    
+    def get_date_time_file (self):
+        current_time = datetime.datetime.now()
+        #print(current_time)
+        tgl = str(current_time.year) + "-" + str(current_time.month) + "-" + str(current_time.day)
+        #print(tgl)
+        jam = str(current_time.hour) + ":" + str(current_time.minute) + ":" + str(current_time.second)
+        #print(jam)
+        str_date_time = str(current_time.year) + "/" + str(current_time.month) + "/" + str(current_time.day) +" " + str(current_time.hour) + ":" + str(current_time.minute) + ":" + str(current_time.second)
+        
+        #print(str_date_time)
+        return str_date_time
+
+    def msgtoLog (self,file, msg):
+        #fileLog = path_log + file
+        print(file)
+        isExistLogFile = os.path.exists(file)
+        if isExistLogFile:
+            f = open(file, "a")
+            f.write(str(self.get_date_time_file()) +  ": " + msg +"\n")
+            f.close()
+        else:
+            f = open(file, "a")
+            f.write(str(self.get_date_time_file()) +  ": " + msg +"\n")
+            f.close()
+
     def __init__(self, stream_id=0):
         #logging.config.fileConfig(fname='logger.ini')
         str_tgl = CCTVStream.date_filename (self)
-        fileLog = str_tgl + '.log'
-      
+        #fileLog = str_tgl + '.log'
+        msgLog = '....................'
+        CCTVStream.msgtoLog(self,fileLog,msgLog)
+        msgLog = 'Starting application'
+        CCTVStream.msgtoLog(self,fileLog,msgLog)
+
         self.stream_id = stream_id   # default is 0 for primary camera 
         
         # opening video capture stream 
@@ -133,19 +182,22 @@ class CCTVStream :
             print("[Exiting]: Error accessing cctv stream.")
             msgLog = '[Exiting]: Error accessing cctv stream.'
             CCTVStream.msgtoLog(self,fileLog,msgLog)
+            #cctv_stream.msgtoLog(fileLog,msgLog)
             exit(0)
         fps_input_stream = int(self.vcap.get(5))
         fps = fps_input_stream
         print("FPS of cctv hardware/input stream: {}".format(fps_input_stream))
         msgLog = 'Starting, CCTV live'
         CCTVStream.msgtoLog(self,fileLog,msgLog)
+        #cctv_stream.msgtoLog(fileLog,msgLog)
             
         # reading a single frame from vcap stream for initializing 
         self.grabbed , self.frame = self.vcap.read()
         if self.grabbed is False :
             print('[Exiting] No more frames to read')
             msgLog = '[Exiting] No more frames to read'
-            CCTVStream.msgtoLog(fileLog,msgLog)
+            CCTVStream.msgtoLog(self,fileLog,msgLog)
+            #cctv_stream.msgtoLog(fileLog,msgLog)
             exit(0)
 
         # self.stopped is set to False when frames are being read from self.vcap stream 
@@ -173,7 +225,8 @@ class CCTVStream :
             if self.grabbed is False :
                 print('[Exiting] No more frames to read')
                 msgLog = '[Exiting] No more frames to read'
-                CCTVStream.msgtoLog(self,fileLog,msgLog)
+                #CCTVStream.msgtoLog(self,fileLog,msgLog)
+                cctv_stream.msgtoLog(fileLog,msgLog)
                 cv2.putText(current_frame_small,  "Out " + msgLog,((50),h-40),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
                 self.stopped = True
                 break 
@@ -188,33 +241,7 @@ class CCTVStream :
         self.stopped = True
     
     
-    def date_filename (self):
-        current_time = datetime.datetime.now()        
-        str_tgl = str(current_time.year) + "_" + str(current_time.month) + "_" + str(current_time.day)
-        return str(str_tgl)
-    
-    def get_date_time_file (self):
-        current_time = datetime.datetime.now()
-        #print(current_time)
-        tgl = str(current_time.year) + "-" + str(current_time.month) + "-" + str(current_time.day)
-        #print(tgl)
-        jam = str(current_time.hour) + ":" + str(current_time.minute) + ":" + str(current_time.second)
-        #print(jam)
-        str_date_time = str(current_time.year) + "_" + str(current_time.month) + "_" + str(current_time.day) +"_" + str(current_time.hour) + "_" + str(current_time.minute) + "_" + str(current_time.second)
-        
-        #print(str_date_time)
-        return str_date_time
 
-    def msgtoLog (self,file, msg):
-        isExistLogFile = os.path.exists(fileLog)
-        if isExistLogFile:
-            f = open(file, "a")
-            f.write(str(self.get_date_time_file()) +  ": " + msg +"\n")
-            f.close()
-        else:
-            f = open(file, "a")
-            f.write(str(self.get_date_time_file()) +  ": " + msg +"\n")
-            f.close()
 
     def detect_muatan(self, results, current_frame_small,img_ori,w,h):
         global skip_double,sabes_count, batu_count, cntFileSaveBatu, cntFileSaveSabes, cntFlag
@@ -231,6 +258,13 @@ class CCTVStream :
 
             label = f'{model.names[int(cls)]} {conf:.2f} {cls}'
             print(label)
+            msgLog = label
+            #cv2.putText(img_ori,  "Log>> " + msgLog,((20),h-20),cv2.FONT_HERSHEY_SIMPLEX,0.75,(0,255,0),2)
+            end = time.time()
+            elapsed = end-start
+            time_pro = elapsed
+            print("Elapsed Time: " + str(elapsed))
+            cv2.putText(img_ori,  "Process time: " + str(round(elapsed,2)) + " s/frame",(450,h-20),cv2.FONT_HERSHEY_SIMPLEX,0.75,(0,255,0),2)
 
             if conf>0.65:
                 if (int(cls)==0):
@@ -247,6 +281,10 @@ class CCTVStream :
                     cv2.putText(current_frame_small, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,0), 2)
                 if (cy > (Y0)) and (cy < Y1) and (int(cls) == 0) and (skip_double0 == 0):
                     chtruk  = 1
+
+                #if (cy >= 0) and ((cls == 1) or (cls == 2)) and (skip_double0 == 0):
+                #    print("Capture awal")
+                #    cv2.imwrite("temp.jpg", img_ori)
 
                 if cy > (Y0) and (skip_double == 0) and (chtruk == 1) and (arah == 1) :
                     if cls==1:
@@ -280,8 +318,9 @@ class CCTVStream :
                         print("")
                         cv2.rectangle(current_frame_small, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (0,255,255), 2)
                         cv2.putText(current_frame_small, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,255), 2)
-                        msgLog = 'Sabes detected, save the image'
-                        CCTVStream.msgtoLog(self,fileLog,msgLog)
+                        msgLog = 'Sabes detected, save the image, process time: ' + str(time_pro) + ' s/frame'
+                        #CCTVStream.msgtoLog(self,fileLog,msgLog)
+                        cctv_stream.msgtoLog(fileLog,msgLog)
                     elif cls==2:
                         skip_double = 1
                         batu_count += 1
@@ -312,8 +351,9 @@ class CCTVStream :
                         print("")
                         cv2.rectangle(current_frame_small, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (255,255,0), 2)
                         cv2.putText(current_frame_small, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,0), 2)
-                        msgLog = 'Batu belah detected, save the image'
-                        CCTVStream.msgtoLog(self,fileLog,msgLog)
+                        msgLog = 'Batu belah detected, save the image, process time: ' + str(time_pro) + ' s/frame'
+                        #CCTVStream.msgtoLog(self,fileLog,msgLog)
+                        cctv_stream.msgtoLog(fileLog,msgLog)
                 if (cy >= (Y1)) and ((int(cls) == 0) or(int(cls) == 1) or (int(cls) == 2)):
                     skip_double = 0
                     chtruk  = 0
@@ -331,13 +371,13 @@ class CCTVStream :
 
 
 # initializing and starting multi-threaded webcam capture input stream
-#cctv_stream = CCTVStream(stream_id=val_rtsp) #  stream_id = 0 is for primary camera 
-cctv_stream = CCTVStream(stream_id=0)
+cctv_stream = CCTVStream(stream_id=val_rtsp) #  stream_id = 0 is for primary camera
+#cctv_stream = CCTVStream(stream_id=0)
 cctv_stream.start()
 
 # processing frames in input stream
 num_frames_processed = 0 
-start = time.time()
+
 while True :
     
     if cctv_stream.stopped is True :
@@ -357,11 +397,12 @@ while True :
 
     current_frame_small = cv2.resize(frame,(0,0),fx=1.3,fy=1.3)
     w, h = current_frame_small.shape[1],current_frame_small.shape[0]
-    
+
     
     if cntdot > 20:
         cntdot = 0
     if (cntdot % 10) == 0  :
+        start = time.time()
         crop_img = current_frame_small[YlineDetect0:YlineDetect1, 0:w]
         results = model(crop_img)
 
@@ -379,12 +420,21 @@ while True :
 
 
     #-----end main code ---
-
+    end = time.time()
+    elapsed = end-start
+    time_pro = elapsed
+    print("Elapsed Time: " + str(elapsed))
+    cv2.putText(current_frame_small,  "Process time: " + str(round(elapsed,2)) + " s/frame",(450,h-20),cv2.FONT_HERSHEY_SIMPLEX,0.75,(0,255,0),2)
     cv2.imshow('frame>>' , current_frame_small)
+    current_time = datetime.datetime.now()
+    if jam != current_time.hour:
+        jam = current_time.hour
+        msgLog = "Process time: " + str(round(elapsed,2)) + " s/frame"
+        cctv_stream.msgtoLog(fileLog,msgLog)
     key = cv2.waitKey(1)
     if key == ord('q'):
         break
-end = time.time()
+
 cctv_stream.stop() # stop the webcam stream 
 
 # printing time elapsed and fps 
@@ -392,7 +442,7 @@ cctv_stream.stop() # stop the webcam stream
 #fps = num_frames_processed/elapsed 
 #print("FPS: {} , Elapsed Time: {} , Frames Processed: {}".format(fps, elapsed, num_frames_processed))
 msgLog = 'Stop the application'
-CCTVStream.msgtoLog(fileLog,msgLog)
+cctv_stream.msgtoLog(fileLog,msgLog)
 #cv2.putText(current_frame_small, "Out: " + msgLog (50,h-50),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
 cv2.putText(current_frame_small,  "Out " + msgLog,((50),h-40),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
 # closing all windows 
