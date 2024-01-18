@@ -190,6 +190,7 @@ def detect(opt):
         model(torch.zeros(1, 3, *imgsz).to(device).type_as(next(model.model.parameters())))  # warmup
     dt, seen = [0.0, 0.0, 0.0, 0.0], 0
     for frame_idx, (path, img, im0s, vid_cap, s) in enumerate(dataset):
+        start = time.time()
         # print(f"Image: {img.shape} ")
         # print(f"Image Type: {type(img)} ")
         
@@ -368,6 +369,8 @@ def detect(opt):
                     vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (1000,700))
                 vid_writer.write(im0)
 
+        end = time.time()
+        print(f"Iteration: {j}\tTime taken: {(end-start)*10**3:.03f}ms")
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
     LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS, %.1fms deep sort update \
@@ -634,7 +637,7 @@ def direction(id,y):
 if __name__ == '__main__':
     __author__ = 'Mahimai Raja J'
     parser = argparse.ArgumentParser()
-    #parser.add_argument('--weights', nargs='+', type=str, default='yolov5s.pt', help='model.pt path(s)')
+    #parser.add_argument('--weights', nargs='+', type=str, default='galian_150epch_3892.pt', help='model.pt path(s)')
     parser.add_argument('--weights', nargs='+', type=str, default='galian_200epch_1k5.pt', help='model.pt path(s)')
     parser.add_argument('--deep_sort_model', type=str, default='osnet_x0_25')
     parser.add_argument('--source', type=str, default='rtsp://admin:Kk123456@192.168.0.101/live', help='source')  # file/folder, 0 for webcam
