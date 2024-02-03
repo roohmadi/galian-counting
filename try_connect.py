@@ -11,6 +11,7 @@ import cv2
 import datetime
 import time
 
+val_rtsp = 'rtsp://admin:Kk123456@192.168.0.101/live'
 
 def reset_attempts():
     return 50
@@ -26,7 +27,7 @@ def process_video(attempts):
             camera.release()
 
             if attempts > 0:
-                time.sleep(5)
+                time.sleep(2)
                 return True
             else:
                 return False
@@ -37,7 +38,8 @@ attempts = reset_attempts()
 
 while(recall):
     #camera = cv2.VideoCapture("rtsp://<ip><port>/live0.264")
-    camera = cv2.VideoCapture(0)
+    print(val_rtsp)
+    camera = cv2.VideoCapture(val_rtsp)
 
     if camera.isOpened():
         print("[INFO] Camera connected at " +
@@ -52,5 +54,5 @@ while(recall):
         print("attempts: " + str(attempts))
 
         # give the camera some time to recover
-        time.sleep(5)
+        time.sleep(2)
         continue
