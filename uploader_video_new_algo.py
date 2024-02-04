@@ -160,6 +160,7 @@ else:
 #model = torch.hub.load('ultralytics/yolov5', 'custom', 'galian_200epch_1k5.pt')
 isExistweight = os.path.exists(weight_file)
 if isExistweight:
+    #weight_file = 'galian_150epch_3892-fp16.tflite'
     model = torch.hub.load('ultralytics/yolov5', 'custom', weight_file)
 else:
     print("Weight file not exist")
@@ -552,9 +553,47 @@ class App:
         self.lmain1.configure(image=imgtk2)
 
 
+    def upload_img_func1(self):
+        #file_path = 'C:\\Users\\roohm\\vehicle-counting-yolov5\\data\\image baru\\Capture.jpg'
+        file_path = 'C:\\Users\\roohm\\Pictures\\sampel new anotate\\sabes_aug\\aug_0_9549.jpg'
+        file_path = 'C:\\Users\\roohm\\Pictures\\Img_2024_2_4_21_45_48_0X.jpg'
+        file_path = 'C:\\Users\\roohm\\Pictures\\Img_2024_2_4_21_46_3_0X.jpg'
+        print(imageVal)
+        print("file_path: " + file_path)
+        frame = cv2.imread(file_path)
+
+        display_frame2 = tkinter.Frame(self.window)
+        display_frame2.place(relx=0.5, rely=0.3, width = 800, height = 900, anchor=tkinter.CENTER)
+
+        self.lmain1 = tkinter.Label(display_frame2)
+        self.lmain1.place(x = 0, y = 0, width=800, height=900)
+
+        w, h = frame.shape[1],frame.shape[0]
+        current_frame_small = cv2.resize(frame,(0,0),fx=1,fy=1)
+
+        #------
+        results = model(frame)
+        #cv2.line(current_frame_small, (0, YlineDetect0),(w, YlineDetect0), (0,255, 255), thickness=3)
+        #cv2.line(current_frame_small, (0, YlineDetect1),(w, YlineDetect1), (0,255, 255), thickness=3)
+
+
+        print("cntOBJ: " +str(cntOBJ))
+        #cv2.putText(current_frame_small, "PINTU " + str(PINTU),(350,50),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
+        cv2image2 = cv2.cvtColor(current_frame_small, cv2.COLOR_BGR2RGBA)
+        crop_img = cv2image2[YlineDetect0:YlineDetect0+150, 0:w]
+        #cv2.imshow("cropped", crop_img)
+        img2 = Image.fromarray(current_frame_small)
+        imgtk2 = ImageTk.PhotoImage(image=img2)
+
+        self.lmain1.imgtk = imgtk2
+        self.lmain1.configure(image=imgtk2)
+
 
     def upload_img_func(self):
-        file_path = 'C:\\Users\\roohm\\vehicle-counting-yolov5\\data\\image baru\\Capture.jpg'
+        #file_path = 'C:\\Users\\roohm\\vehicle-counting-yolov5\\data\\image baru\\Capture.jpg'
+        file_path = 'C:\\Users\\roohm\\Pictures\\sampel new anotate\\sabes_aug\\aug_0_9549.jpg'
+        file_path = 'C:\\Users\\roohm\\Pictures\\Img_2024_2_4_21_45_48_0X.jpg'
+        #file_path = 'C:\\Users\\roohm\\Pictures\\Img_2024_2_4_21_46_3_0X.jpg'
         print(imageVal)
         print("file_path: " + file_path)
         frame = cv2.imread(file_path)
@@ -570,8 +609,8 @@ class App:
 
         #------
         results = model(current_frame_small)
-        cv2.line(current_frame_small, (0, YlineDetect0),(w, YlineDetect0), (0,255, 255), thickness=3)
-        cv2.line(current_frame_small, (0, YlineDetect1),(w, YlineDetect1), (0,255, 255), thickness=3)
+        #cv2.line(current_frame_small, (0, YlineDetect0),(w, YlineDetect0), (0,255, 255), thickness=3)
+        #cv2.line(current_frame_small, (0, YlineDetect1),(w, YlineDetect1), (0,255, 255), thickness=3)
 
 
         #=====
@@ -590,23 +629,23 @@ class App:
                 if (int(cls) == 0) and (cy >= YlineDetect0) and (cy <= YlineDetect1):
                     cv2.rectangle(current_frame_small, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (255,0,0), 2)
                     cv2.putText(current_frame_small, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,0,0), 2)
-                    cv2.line(current_frame_small, (0, cy),(w, cy), (255, 0,0), thickness=3)
+                    #cv2.line(current_frame_small, (0, cy),(w, cy), (255, 0,0), thickness=3)
                 if (int(cls) == 1) and (cy >= YlineDetect0) and (cy <= YlineDetect1):
                     cv2.rectangle(current_frame_small, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (0,0,255), 2)
                     cv2.putText(current_frame_small, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2)
-                    cv2.line(current_frame_small, (0, cy),(w, cy), (0,0,255), thickness=3)
+                    #cv2.line(current_frame_small, (0, cy),(w, cy), (0,0,255), thickness=3)
                 if (int(cls) == 2) and (cy >= YlineDetect0) and (cy <= YlineDetect1):
                     cv2.rectangle(current_frame_small, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (0,255,0), 2)
                     cv2.putText(current_frame_small, label, (int(xyxy[0]), int(xyxy[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2)
-                    cv2.line(current_frame_small, (0, cy),(w, cy), (0,255, 0), thickness=3)
+                    #cv2.line(current_frame_small, (0, cy),(w, cy), (0,255, 0), thickness=3)
 
         #-----
         print("cntOBJ: " +str(cntOBJ))
-        cv2.putText(current_frame_small, "PINTU " + str(PINTU),(350,50),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
+        #cv2.putText(current_frame_small, "PINTU " + str(PINTU),(350,50),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
         cv2image2 = cv2.cvtColor(current_frame_small, cv2.COLOR_BGR2RGBA)
         crop_img = cv2image2[YlineDetect0:YlineDetect0+150, 0:w]
         #cv2.imshow("cropped", crop_img)
-        img2 = Image.fromarray(crop_img)
+        img2 = Image.fromarray(current_frame_small)
         imgtk2 = ImageTk.PhotoImage(image=img2)
 
         self.lmain1.imgtk = imgtk2
