@@ -16,7 +16,7 @@ if isExistINI:
     f.close()
     if status:
         try:
-            os.system(f' python hello.py')
+            os.system(f' python cctv_capture_raspi4_juni.py')
         except FileNotFoundError:
             print(f"Error: The file 'hello.py' does not exist.")
 else:
